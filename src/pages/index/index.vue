@@ -2,7 +2,7 @@
 //
 import { onLoad } from '@dcloudio/uni-app'
 import CustomNavBar from './components/CustomNavBar.vue'
-import { getHomeBannerApi, getHomeCategoryApi, getHomeHotApi } from '@/services/home'
+import { getHomeBannerApi, getHomeCategoryApi, getHomeHotApi } from '@/services/apis/home'
 import { ref } from 'vue'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
@@ -36,9 +36,12 @@ onLoad(() => {
 <template>
   <view class="index">
     <CustomNavBar />
-    <XtxSwiper :list="bannerList" />
-    <CategoryPanel :list="homeCategoryList" />
-    <HotPanel :list="homeHotList" />
+    <scroll-view scroll-y class="scroll">
+      <XtxSwiper :list="bannerList" />
+      <CategoryPanel :list="homeCategoryList" />
+      <HotPanel :list="homeHotList" />
+      <XtxGuess />
+    </scroll-view>
   </view>
 </template>
 
@@ -46,5 +49,13 @@ onLoad(() => {
 //
 page {
   background-color: #f7f7f7;
+}
+.index {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  .scroll {
+    flex: 1;
+  }
 }
 </style>
