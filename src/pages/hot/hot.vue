@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { getHotCommonApi } from '@/services/apis/hot'
-import type { HotItem } from '@/types/home'
 import type { hotResult, HotSubType } from '@/types/hot'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
@@ -23,11 +22,15 @@ uni.setNavigationBarTitle({
   title: curHot!.title,
 })
 let hot = ref<hotResult>()
-let curSubTypes = ref<HotSubType[]>([])
+let subTypes = ref<(HotSubType & { noMoreData?: boolean })[]>([])
 const getHotList = async () => {
-  let { result } = await getHotCommonApi(curHot!.url)
+  let { result } = await getHotCommonApi(curHot!.url, {
+    // 技巧：开发环境，修改初始页面方便测试
+    page: import.meta.env.DEV ? 33 : 1,
+    pageSize: 10,
+  })
   hot.value = result
-  curSubTypes.value = result.subTypes
+  subTypes.value = result.subTypes
 }
 let activeIndex = ref(0)
 let onChangeIndex = (index: number) => {
@@ -36,6 +39,29 @@ let onChangeIndex = (index: number) => {
 onLoad(() => {
   getHotList()
 })
+let onScrolltolower = async () => {
+  let curSubType = subTypes.value[activeIndex.value]
+  if (curSubType.goodsItems.page < curSubType.goodsItems.pages) {
+    curSubType.goodsItems.page++
+  } else {
+    curSubType.noMoreData = true
+    return uni.showToast({
+      icon: 'none',
+      title: '没有更多数据了~',
+    })
+  }
+  let {
+    result: { subTypes: newSubTypes },
+  } = await getHotCommonApi(curHot!.url, {
+    page: curSubType.goodsItems.page,
+    pageSize: curSubType.goodsItems.pageSize,
+    subType: curSubType.id,
+  })
+  // console.log(newSubTypes)
+  subTypes.value[activeIndex.value].goodsItems.items.push(
+    ...newSubTypes[activeIndex.value].goodsItems.items,
+  )
+}
 </script>
 
 <template>
@@ -56,12 +82,19 @@ onLoad(() => {
       </text>
     </view>
     <!-- 推荐列表 -->
-    <scroll-view scroll-y class="scroll-view">
+    <scroll-view
+      scroll-y
+      v-for="(item, index) in subTypes"
+      :key="item.id"
+      v-show="index === activeIndex"
+      class="scroll-view"
+      @scrolltolower="onScrolltolower"
+    >
       <view class="goods">
         <navigator
           hover-class="none"
           class="navigator"
-          v-for="goods in curSubTypes[activeIndex]?.goodsItems.items"
+          v-for="goods in item?.goodsItems.items"
           :key="goods.id"
           :url="`/pages/goods/goods?id=${goods.id}`"
         >
@@ -73,7 +106,9 @@ onLoad(() => {
           </view>
         </navigator>
       </view>
-      <view class="loading-text">正在加载...</view>
+      <view class="loading-text">
+        {{ item.noMoreData ? '没有数据了~' : '正在加载...' }}
+      </view>
     </scroll-view>
   </view>
 </template>
