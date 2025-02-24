@@ -1,6 +1,6 @@
-import type { PageResult } from '@/types/global'
+import type { PageParams, PageResult } from '@/types/global'
 import type { BannerItem, CategoryItem, GuessItem, HotItem } from '@/types/home'
-import { request } from '@/utils/http'
+import { request } from '@/utils/request'
 
 export const getHomeBannerApi = (distributionSite = 1) => {
   return request<BannerItem[]>({
@@ -26,9 +26,10 @@ export const getHomeHotApi = () => {
   })
 }
 
-export const getGoodsGuessList = () => {
+export const getGoodsGuessListApi = (data?: PageParams) => {
   return request<PageResult<GuessItem>>({
     method: 'GET',
     url: '/home/goods/guessLike',
+    data,
   })
 }

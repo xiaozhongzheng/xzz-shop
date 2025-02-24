@@ -7,3 +7,6 @@ declare module 'vue' {
     XtxGuess: typeof XtxGuess
   }
 }
+
+// 组件类型实例
+export type GuessInstance = InstanceType<typeof XtxGuess>

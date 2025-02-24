@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMemberStore } from '@/stores'
-import { request } from '@/utils/http'
+import { request } from '@/utils/request'
 const memberStore = useMemberStore()
 // 测试请求
 const getData = async () => {

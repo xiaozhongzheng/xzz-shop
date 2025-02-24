@@ -1,15 +1,37 @@
 <script setup lang="ts">
 //
-import { getGoodsGuessList } from '@/services/apis/home'
+import { getGoodsGuessListApi } from '@/services/apis/home'
+import type { PageParams } from '@/types/global'
 import type { GuessItem } from '@/types/home'
 import { onMounted, ref } from 'vue'
 let guessList = ref<GuessItem[]>([])
+// Reqired 可以将参数变为必选
+let queryParams: Required<PageParams> = {
+  page: 33,
+  pageSize: 10,
+}
+let noMoreData = ref(false)
 let getGuessList = async () => {
-  let { result } = await getGoodsGuessList()
-  guessList.value = result.items
+  if (noMoreData.value) {
+    return uni.showToast({
+      icon: 'none',
+      title: '没有更多数据了~',
+    })
+  }
+  let { result } = await getGoodsGuessListApi(queryParams)
+  guessList.value = [...guessList.value, ...result.items]
+  if (queryParams.page < result.pages) {
+    queryParams.page++
+  } else {
+    noMoreData.value = true
+  }
 }
 onMounted(() => {
   getGuessList()
+})
+
+defineExpose({
+  getGuessList,
 })
 </script>
 
@@ -33,7 +55,9 @@ onMounted(() => {
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> 正在加载... </view>
+  <view class="loading-text">
+    {{ noMoreData ? '没有数据了~' : ' 正在加载... ' }}
+  </view>
 </template>
 
 <style lang="scss">

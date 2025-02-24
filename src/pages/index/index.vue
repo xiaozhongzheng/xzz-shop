@@ -7,6 +7,8 @@ import { ref } from 'vue'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
+import type { GuessInstance } from '@/components/components'
+
 let bannerList = ref<BannerItem[]>([])
 let getHomeBannerList = async () => {
   let { result } = await getHomeBannerApi()
@@ -26,21 +28,54 @@ let getHomeHotList = async () => {
   let { result } = await getHomeHotApi()
   homeHotList.value = result
 }
+// 获取子组件实例
+let guessRef = ref<GuessInstance>()
+
+let getMoreData = () => {
+  // console.log(guessRef.value)
+  guessRef.value?.getGuessList()
+}
 onLoad(() => {
   getHomeBannerList()
   getHomeCategoryList()
   getHomeHotList()
 })
+const showRefresh = ref(false)
+const onRefresherrefresh = () => {
+  showRefresh.value = true
+  // 这种方法太耗费时间了
+  // await getHomeBannerList()
+  // await getHomeCategoryList()
+  // await getHomeHotList()
+  Promise.all([getHomeBannerList(), getHomeCategoryList(), getHomeHotList()])
+    .then((res) => {})
+    .catch((err) => {
+      uni.showToast({
+        icon: 'none',
+        title: '服务器出错啦~~~',
+      })
+    })
+    .finally(() => {
+      showRefresh.value = false
+    })
+}
 </script>
 
 <template>
   <view class="index">
     <CustomNavBar />
-    <scroll-view scroll-y class="scroll">
+    <scroll-view
+      scroll-y
+      class="scroll"
+      refresher-enabled
+      @refresherrefresh="onRefresherrefresh"
+      @scrolltolower="getMoreData"
+      :refresher-triggered="showRefresh"
+    >
       <XtxSwiper :list="bannerList" />
       <CategoryPanel :list="homeCategoryList" />
       <HotPanel :list="homeHotList" />
-      <XtxGuess />
+      <XtxGuess ref="guessRef" />
     </scroll-view>
   </view>
 </template>
