@@ -8,7 +8,7 @@ import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
 import type { GuessInstance } from '@/components/components'
-
+import PageSkeleton from './components/PageSkeleton.vue'
 let bannerList = ref<BannerItem[]>([])
 let getHomeBannerList = async () => {
   let { result } = await getHomeBannerApi()
@@ -35,10 +35,11 @@ let getMoreData = () => {
   // console.log(guessRef.value)
   guessRef.value?.getGuessList()
 }
-onLoad(() => {
-  getHomeBannerList()
-  getHomeCategoryList()
-  getHomeHotList()
+// 表示页面是否在加载
+let loading = ref(true)
+onLoad(async () => {
+  await Promise.all([getHomeBannerList(), getHomeCategoryList(), getHomeHotList()])
+  loading.value = false
 })
 const showRefresh = ref(false)
 const onRefresherrefresh = () => {
@@ -47,7 +48,14 @@ const onRefresherrefresh = () => {
   // await getHomeBannerList()
   // await getHomeCategoryList()
   // await getHomeHotList()
-  Promise.all([getHomeBannerList(), getHomeCategoryList(), getHomeHotList()])
+  // 调用子组件的重置数据的方法
+  guessRef.value?.resetData()
+  Promise.all([
+    getHomeBannerList(),
+    getHomeCategoryList(),
+    getHomeHotList(),
+    guessRef.value?.getGuessList(),
+  ])
     .then((res) => {})
     .catch((err) => {
       uni.showToast({
@@ -72,10 +80,13 @@ const onRefresherrefresh = () => {
       @scrolltolower="getMoreData"
       :refresher-triggered="showRefresh"
     >
-      <XtxSwiper :list="bannerList" />
-      <CategoryPanel :list="homeCategoryList" />
-      <HotPanel :list="homeHotList" />
-      <XtxGuess ref="guessRef" />
+      <PageSkeleton v-if="loading" />
+      <template v-else>
+        <XtxSwiper :list="bannerList" />
+        <CategoryPanel :list="homeCategoryList" />
+        <HotPanel :list="homeHotList" />
+        <XtxGuess ref="guessRef" />
+      </template>
     </scroll-view>
   </view>
 </template>

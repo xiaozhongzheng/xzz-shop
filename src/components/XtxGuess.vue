@@ -7,7 +7,7 @@ import { onMounted, ref } from 'vue'
 let guessList = ref<GuessItem[]>([])
 // Reqired 可以将参数变为必选
 let queryParams: Required<PageParams> = {
-  page: 33,
+  page: 1,
   pageSize: 10,
 }
 let noMoreData = ref(false)
@@ -26,12 +26,18 @@ let getGuessList = async () => {
     noMoreData.value = true
   }
 }
+let resetData = () => {
+  queryParams.page = 1
+  noMoreData.value = false
+  guessList.value = []
+}
 onMounted(() => {
   getGuessList()
 })
 
 defineExpose({
   getGuessList,
+  resetData,
 })
 </script>
 
