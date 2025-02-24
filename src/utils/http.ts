@@ -18,10 +18,52 @@ const httpInterceptor = {
     const token = memberstore.profile?.token
     if (token) {
       options.header.Authorization = token
-      console.log(options)
+      // console.log(options)
     }
   },
 }
 
 uni.addInterceptor('request', httpInterceptor)
 uni.addInterceptor('uploadFile', httpInterceptor)
+
+interface Data<T> {
+  code: string
+  msg: string
+  result: T
+}
+
+export const request = <T>(options: UniApp.RequestOptions) => {
+  return new Promise<Data<T>>((resolve, reject) => {
+    uni.request({
+      ...options,
+      success: (res) => {
+        // 响应成功
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data as Data<T>)
+        } else if (res.statusCode === 401) {
+          // 清理用户信息
+          const memberstore = useMemberStore()
+          memberstore.clearProfile()
+          uni.navigateTo({
+            url: '/pages/login/login',
+          })
+          reject(res)
+        } else {
+          // 其他错误
+          uni.showToast({
+            icon: 'none',
+            title: (res.data as Data<T>).msg || '请求有误~~~',
+          })
+          reject(res)
+        }
+      },
+      fail: (err) => {
+        uni.showToast({
+          icon: 'none',
+          title: '网络错误，换个网络试试~~~',
+        })
+        reject(err)
+      },
+    })
+  })
+}
