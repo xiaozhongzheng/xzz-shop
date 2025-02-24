@@ -1,4 +1,4 @@
-import type { BannerItem, CategoryItem } from '@/types/home'
+import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import { request } from '@/utils/http'
 
 export const getHomeBannerApi = (distributionSite = 1) => {
@@ -15,5 +15,12 @@ export const getHomeCategoryApi = () => {
   return request<CategoryItem[]>({
     method: 'GET',
     url: '/home/category/mutli',
+  })
+}
+
+export const getHomeHotApi = () => {
+  return request<HotItem[]>({
+    method: 'GET',
+    url: '/home/hot/mutli',
   })
 }
