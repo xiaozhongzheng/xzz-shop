@@ -4,7 +4,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import CustomNavBar from './components/CustomNavBar.vue'
 import { getHomeBannerApi, getHomeCategoryApi, getHomeHotApi } from '@/services/apis/home'
 import { ref } from 'vue'
-import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
+import type { BannerItem, HomeCategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
 import type { GuessInstance } from '@/components/components'
@@ -16,7 +16,7 @@ let getHomeBannerList = async () => {
   bannerList.value = result
   // console.log(bannerList.value)
 }
-let homeCategoryList = ref<CategoryItem[]>([])
+let homeCategoryList = ref<HomeCategoryItem[]>([])
 let getHomeCategoryList = async () => {
   let { result } = await getHomeCategoryApi()
   homeCategoryList.value = result

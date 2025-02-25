@@ -1,5 +1,5 @@
 import type { PageParams, PageResult } from '@/types/global'
-import type { BannerItem, CategoryItem, GuessItem, HotItem } from '@/types/home'
+import type { BannerItem, HomeCategoryItem, GuessItem, HotItem } from '@/types/home'
 import { request } from '@/utils/request'
 
 export const getHomeBannerApi = (distributionSite = 1) => {
@@ -13,7 +13,7 @@ export const getHomeBannerApi = (distributionSite = 1) => {
 }
 
 export const getHomeCategoryApi = () => {
-  return request<CategoryItem[]>({
+  return request<HomeCategoryItem[]>({
     method: 'GET',
     url: '/home/category/mutli',
   })
