@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useMemberStore } from '@/stores'
 import { request } from '@/utils/request'
+import { useUserInfoStore } from '@/stores/modules/user'
 const memberStore = useMemberStore()
 // 测试请求
 const getData = async () => {
@@ -11,11 +12,12 @@ const getData = async () => {
 
   console.log('res')
 }
+let userStore = useUserInfoStore()
 </script>
 
 <template>
   <view class="my">
-    <view>会员信息：{{ memberStore.profile }}</view>
+    <view>会员信息：{{ userStore.userInfo }}</view>
     <button
       @tap="
         memberStore.setProfile({
@@ -30,7 +32,7 @@ const getData = async () => {
       保存用户信息
     </button>
     <button @tap="memberStore.clearProfile()" size="mini" plain type="warn">清理用户信息</button>
-    <button @tap="getData()" size="mini" plain type="warn">请求</button>
+    <button @tap="userStore.add()" size="mini" plain type="warn">请求</button>
   </view>
 </template>
 

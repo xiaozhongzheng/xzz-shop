@@ -22,7 +22,7 @@ export const useMemberStore = defineStore(
     return {
       profile,
       setProfile,
-      clearProfile,
+      // clearProfile,
     }
   },
   // TODO: 持久化
