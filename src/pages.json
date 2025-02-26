@@ -93,5 +93,26 @@
 				"selectedIconPath": "static/tabs/user_selected.png"
 			}
 		]
-	}
+	},
+  // 分包
+	"subPackages": [
+		{
+			"root": "pagesMine",
+			"pages": [
+				{
+					"path": "settings/settings",
+					"style": {
+						"navigationBarTitleText": "设置"
+					}
+				}
+			]
+		}
+	],
+  // 分包预下载规则
+  "preloadRule": {
+    "pages/my/my": {
+      "network": "all",
+      "packages": ["pagesMine"]
+    }
+  }
 }
