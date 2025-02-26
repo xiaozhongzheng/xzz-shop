@@ -8,9 +8,13 @@ export const useUserInfoStore = defineStore(
     const setUserInfo = (val: LoginResult) => {
       userInfo.value = val
     }
+    const removeUserInfo = () => {
+      userInfo.value = undefined
+    }
     return {
       userInfo,
       setUserInfo,
+      removeUserInfo,
     }
   },
   {

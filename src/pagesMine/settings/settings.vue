@@ -1,11 +1,24 @@
 <script setup lang="ts">
-//
+import { useUserInfoStore } from '@/stores/modules/user'
+const userStore = useUserInfoStore()
+let logout = () => {
+  uni.showModal({
+    content: '是否退出登录',
+    success: (res) => {
+      if (res.confirm) {
+        // 点击确认
+        userStore.removeUserInfo()
+        uni.navigateBack()
+      }
+    },
+  })
+}
 </script>
 
 <template>
   <view class="viewport">
     <!-- 列表1 -->
-    <view class="list" v-if="true">
+    <view class="list" v-if="userStore.userInfo">
       <navigator url="/pagesMember/address/address" hover-class="none" class="item arrow">
         我的收货地址
       </navigator>
@@ -22,7 +35,7 @@
     </view>
     <!-- 操作按钮 -->
     <view class="action">
-      <view class="button">退出登录</view>
+      <view class="button" @click="logout" v-if="userStore.userInfo">退出登录</view>
     </view>
   </view>
 </template>
