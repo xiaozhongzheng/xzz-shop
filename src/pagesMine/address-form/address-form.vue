@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { addAddressApi, getAddressByIdApi, updateAddressApi } from '@/services/apis/adress'
+import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 
 // 表单数据
@@ -14,12 +16,47 @@ const form = ref({
 })
 
 const query = defineProps<{
-  id?: string
+  id?: string // 如果是点击了修改，则id不为空
 }>()
+// const address = ref<AddressItem>()
+const getAddress = async () => {
+  const res = await getAddressByIdApi(query.id!)
+  form.value = res.result
+}
+
+onLoad(() => {
+  query.id && getAddress()
+})
 
 uni.setNavigationBarTitle({
   title: query.id ? '修改地址' : '新建地址',
 })
+
+const onChangeRegion: UniHelper.RegionPickerOnChange = (ev) => {
+  form.value.fullLocation = ev.detail.value.join(' ')
+  const [provinceCode, cityCode, countyCode] = ev.detail.code!
+  form.value = {
+    ...form.value,
+    provinceCode,
+    cityCode,
+    countyCode,
+  }
+}
+const onChangeSwitch: UniHelper.SwitchOnChange = (ev) => {
+  // console.log(ev)
+  form.value.isDefault = +ev.detail.value
+}
+const onSubmit = async () => {
+  query.id ? await updateAddressApi(query.id, form.value) : await addAddressApi(form.value)
+
+  uni.showToast({
+    title: query.id ? '修改成功' : '新增成功',
+    icon: 'none',
+  })
+  setTimeout(() => {
+    uni.navigateBack()
+  }, 500)
+}
 </script>
 
 <template>
@@ -28,31 +65,36 @@ uni.setNavigationBarTitle({
       <!-- 表单内容 -->
       <view class="form-item">
         <text class="label">收货人</text>
-        <input class="input" placeholder="请填写收货人姓名" value="" />
+        <input class="input" placeholder="请填写收货人姓名" v-model="form.receiver" />
       </view>
       <view class="form-item">
         <text class="label">手机号码</text>
-        <input class="input" placeholder="请填写收货人手机号码" value="" />
+        <input class="input" placeholder="请填写收货人手机号码" v-model="form.contact" />
       </view>
       <view class="form-item">
         <text class="label">所在地区</text>
-        <picker class="picker" mode="region" value="">
-          <view v-if="false">广东省 广州市 天河区</view>
+        <picker class="picker" mode="region" @change="onChangeRegion">
+          <view v-if="form.fullLocation">{{ form.fullLocation }}</view>
           <view v-else class="placeholder">请选择省/市/区(县)</view>
         </picker>
       </view>
       <view class="form-item">
         <text class="label">详细地址</text>
-        <input class="input" placeholder="街道、楼牌号等信息" value="" />
+        <input class="input" placeholder="街道、楼牌号等信息" v-model="form.address" />
       </view>
       <view class="form-item">
         <label class="label">设为默认地址</label>
-        <switch class="switch" color="#27ba9b" :checked="true" />
+        <switch
+          class="switch"
+          @change="onChangeSwitch"
+          color="#27ba9b"
+          :checked="!!form.isDefault"
+        />
       </view>
     </form>
   </view>
   <!-- 提交按钮 -->
-  <button class="button">保存并使用</button>
+  <button class="button" @click="onSubmit">保存并使用</button>
 </template>
 
 <style lang="scss">
