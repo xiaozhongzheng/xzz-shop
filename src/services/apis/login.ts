@@ -1,4 +1,4 @@
-import type { LoginResult } from '@/types/member'
+import type { LoginResult } from '@/types/user'
 import { request } from '@/utils/request'
 
 type loginParams = {

@@ -1,4 +1,4 @@
-import { useMemberStore } from '@/stores'
+import { useUserInfoStore } from '@/stores/modules/user'
 const baseURL = 'https://pcapi-xiaotuxian-front-devtest.itheima.net'
 // 添加拦截器
 const httpInterceptor = {
@@ -14,8 +14,8 @@ const httpInterceptor = {
     //3.添加小程序端请求头标识
     options.header = { ...options.header, 'source-client': 'miniapp' }
     //4.添加 token 请求头标识
-    const memberstore = useMemberStore()
-    const token = memberstore.profile?.token
+    const userStore = useUserInfoStore()
+    const token = userStore.userInfo?.token
     if (token) {
       options.header.Authorization = token
       // console.log(options)

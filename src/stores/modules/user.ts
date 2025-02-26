@@ -1,4 +1,4 @@
-import type { LoginResult } from '@/types/member'
+import type { LoginResult } from '@/types/user'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 export const useUserInfoStore = defineStore(
