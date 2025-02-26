@@ -9,6 +9,8 @@ import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
 import type { GuessInstance } from '@/components/components'
 import PageSkeleton from './components/PageSkeleton.vue'
+import { useGuessList } from '@/composables'
+
 let bannerList = ref<BannerItem[]>([])
 let getHomeBannerList = async () => {
   let { result } = await getHomeBannerApi()
@@ -28,13 +30,15 @@ let getHomeHotList = async () => {
   let { result } = await getHomeHotApi()
   homeHotList.value = result
 }
-// 获取子组件实例
-let guessRef = ref<GuessInstance>()
+// // 获取子组件实例
+// let guessRef = ref<GuessInstance>()
 
-let getMoreData = () => {
-  // console.log(guessRef.value)
-  guessRef.value?.getGuessList()
-}
+// let getMoreData = () => {
+//   // console.log(guessRef.value)
+//   guessRef.value?.getGuessList()
+// }
+let { guessRef, onScrolltolower } = useGuessList()
+
 // 表示页面是否在加载
 let loading = ref(true)
 onLoad(async () => {
@@ -77,7 +81,7 @@ const onRefresherrefresh = () => {
       class="scroll"
       refresher-enabled
       @refresherrefresh="onRefresherrefresh"
-      @scrolltolower="getMoreData"
+      @scrolltolower="onScrolltolower"
       :refresher-triggered="showRefresh"
     >
       <PageSkeleton v-if="loading" />

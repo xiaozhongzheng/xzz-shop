@@ -45,7 +45,7 @@ let onScrolltolower = async () => {
     curSubType.goodsItems.page++
   } else {
     curSubType.noMoreData = true
-    return uni.showToast({
+    return uni.showToast({  
       icon: 'none',
       title: '没有更多数据了~',
     })
