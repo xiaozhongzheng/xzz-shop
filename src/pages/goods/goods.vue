@@ -4,16 +4,42 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
 import { getGoodsApi } from '@/services/apis/category'
 import type { GoodsResult } from '@/types/goods'
 import { onLoad, onPageScroll } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstance,
+  SkuPopupLocaldata,
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import { addCartApi } from '@/services/apis/cart'
 const query = defineProps<{
   id: string
 }>()
 let goods = ref<GoodsResult>()
+// 是否显示SKU组件
+const isShowSku = ref(false)
+// 商品信息
+const localdata = ref({} as SkuPopupLocaldata)
 let getGoods = async () => {
-  let { result } = await getGoodsApi(query.id)
-  goods.value = result
+  let res = await getGoodsApi(query.id)
+  goods.value = res.result
+  // SKU组件所需格式
+  localdata.value = {
+    _id: res.result.id,
+    name: res.result.name,
+    goods_thumb: res.result.mainPictures[0],
+    spec_list: res.result.specs.map((v) => ({ name: v.name, list: v.values })),
+    sku_list: res.result.skus.map((v) => ({
+      _id: v.id,
+      goods_id: res.result.id,
+      goods_name: res.result.name,
+      image: v.picture,
+      price: v.price * 100, // 注意：需要乘以 100
+      stock: v.inventory,
+      sku_name_arr: v.specs.map((vv) => vv.valueName),
+    })),
+  }
 }
 console.log(query, 'goodsQuery')
 
@@ -43,9 +69,56 @@ let openPopup = (name: typeof popupName.value) => {
 let closePopup = () => {
   popupRef.value?.close()
 }
+enum SkuMode {
+  Both = 1,
+  Cart = 2,
+  Buy = 3,
+}
+let skuMode = ref<SkuMode>(3)
+let isShow = ref<boolean>(false)
+const openSkuPopup = (val: SkuMode) => {
+  isShowSku.value = true
+  skuMode.value = val
+  isShow.value = true
+}
+
+let skuPopupRef = ref<SkuPopupInstance>()
+let selectArrText = computed(() => {
+  console.log(skuPopupRef.value?.selectArr, '***')
+  return skuPopupRef.value?.selectArr.join('').trim() || '请选择商品规格'
+})
+let onAddCart = async (ev: SkuPopupEvent) => {
+  // console.log(ev)
+  await addCartApi({
+    skuId: ev._id,
+    count: ev.buy_num,
+  })
+  uni.showToast({
+    title: '添加成功',
+    icon: 'none',
+  })
+}
+let onBuyNow = (ev: any) => {
+  // console.log(ev, 'buynow')
+
+  uni.navigateTo({
+    url: `/pagesOrders/create/create?skuId=${ev._id}&count=${ev.buy_num}`,
+  })
+}
 </script>
 
 <template>
+  <!-- SKU组件 -->
+  <vk-data-goods-sku-popup
+    v-model="isShowSku"
+    :localdata="localdata"
+    :mode="skuMode"
+    ref="skuPopupRef"
+    add-cart-background-color="rgb(243, 171, 114)"
+    buy-now-background-color="rgb(90, 183, 157)"
+    @add-cart="onAddCart"
+    @buy-now="onBuyNow"
+  ></vk-data-goods-sku-popup>
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -77,7 +150,9 @@ let closePopup = () => {
       <view class="action">
         <view class="item arrow">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis" @click="openSkuPopup(SkuMode.Both)">
+            {{ selectArrText }}
+          </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
@@ -152,13 +227,13 @@ let closePopup = () => {
       <button class="icons-button" open-type="contact">
         <text class="icon-handset"></text>客服
       </button>
-      <navigator class="icons-button" url="/pages/cart/cart" open-type="switchTab">
+      <navigator class="icons-button" url="/pages/cart/cart2" open-type="navigate">
         <text class="icon-cart"></text>购物车
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @click="openSkuPopup(SkuMode.Cart)"> 加入购物车 </view>
+      <view class="buynow" @click="openSkuPopup(SkuMode.Buy)"> 立即购买 </view>
     </view>
   </view>
 
@@ -310,7 +385,7 @@ page {
     }
     .text {
       flex: 1;
-      -webkit-line-clamp: 1;
+      // -webkit-line-clamp: 1;
     }
   }
 }

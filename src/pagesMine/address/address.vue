@@ -3,11 +3,16 @@ import { getAddressListApi } from '@/services/apis/adress'
 import type { AddressItem } from '@/types/address'
 import { onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
-
+import { useAdressStore } from '@/stores/modules/address'
 const addressList = ref<AddressItem[]>()
 const getAddressList = async () => {
   const res = await getAddressListApi()
   addressList.value = res.result
+}
+const addressStore = useAdressStore()
+const saveAddress = (item: AddressItem) => {
+  addressStore.setAddress(item)
+  uni.navigateBack()
 }
 
 onShow(() => {
@@ -24,7 +29,7 @@ onShow(() => {
         <view class="address-list">
           <!-- 收货地址项 -->
           <view class="item" v-for="item in addressList" :key="item.id">
-            <view class="item-content">
+            <view class="item-content" @tap="saveAddress(item)">
               <view class="user">
                 {{ item.receiver }}
                 <text class="contact">{{ item.contact }}</text>
@@ -35,6 +40,7 @@ onShow(() => {
                 class="edit"
                 hover-class="none"
                 :url="`/pagesMine/address-form/address-form?id=${item.id}`"
+                @tap.stop="() => {}"
               >
                 修改
               </navigator>

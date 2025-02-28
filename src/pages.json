@@ -53,6 +53,18 @@
 			"style": {
 				"navigationBarTitleText": "商品详情"
 			}
+		},
+		{
+			"path": "pages/cart/cart2",
+			"style": {
+				"navigationBarTitleText": "购物车"
+			}
+		},
+		{
+			"path": "pagesOrders/create/create",
+			"style": {
+				"navigationBarTitleText": "填写订单"
+			}
 		}
 	],
 	"globalStyle": {

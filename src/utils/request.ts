@@ -42,8 +42,8 @@ export const request = <T>(options: UniApp.RequestOptions) => {
           resolve(res.data as Data<T>)
         } else if (res.statusCode === 401) {
           // 清理用户信息
-          const memberstore = useMemberStore()
-          memberstore.clearProfile()
+          const userStore = useUserInfoStore()
+          userStore.removeUserInfo()
           uni.navigateTo({
             url: '/pages/login/login',
           })

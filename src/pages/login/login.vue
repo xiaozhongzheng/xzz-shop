@@ -30,9 +30,10 @@ let simpleLogin = async () => {
     title: '登录成功',
   })
   setTimeout(() => {
-    uni.switchTab({
-      url: '/pages/my/my',
-    })
+    // uni.switchTab({
+    //   url: '/pages/my/my',
+    // })
+    uni.navigateBack()
   }, 500)
 }
 onLoad(() => {
