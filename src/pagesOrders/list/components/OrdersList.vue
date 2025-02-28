@@ -1,6 +1,8 @@
 <template>
   <!-- 订单列表 -->
-  <scroll-view scroll-y class="orders">
+  <view class="noData" v-if="isShow && !ordersList.length"><text>暂无数据</text></view>
+
+  <scroll-view v-else-if="isShow" scroll-y class="orders">
     <view class="card" v-for="item in ordersList" :key="item.id">
       <!-- 订单信息 -->
       <view class="status">
@@ -58,6 +60,8 @@
       {{ !ordersList.length ? '没有更多数据~' : '正在加载...' }}
     </view> -->
   </scroll-view>
+
+  <ListSkeleton v-else></ListSkeleton>
 </template>
 
 <script setup lang="ts">
@@ -65,24 +69,32 @@ import { getOrdersListApi, payOrdersApi, payOrdersMockApi } from '@/services/api
 import { OrderState, orderStateList } from '@/types/constant'
 import type { OrderItem, OrderListParams } from '@/types/orders'
 import { onMounted, ref } from 'vue'
+import ListSkeleton from './ListSkeleton.vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 const query = defineProps<{
   ordersState: number
 }>()
+let isShow = ref<boolean>(false)
+
 const params: OrderListParams = {
   page: 0,
   pageSize: 10,
   orderState: query.ordersState,
 }
+const emit = defineEmits(['success'])
+
 const ordersList = ref<OrderItem[]>([])
 const getOrdersList = async () => {
   uni.showLoading({ title: '数据加载中...' })
   const res = await getOrdersListApi(params)
   ordersList.value = res.result.items
   uni.hideLoading()
+  // emit('success', true)
+  isShow.value = true
 }
+
 const toPayOrders = async (orderId: string) => {
   if (import.meta.env.DEV) {
     // 开发环境时模拟支付
@@ -106,6 +118,12 @@ onMounted(() => {
 
 <style lang="scss">
 // 订单列表
+.noData {
+  font-size: 50rpx;
+  height: 100px;
+  text-align: center;
+  padding-top: 50%;
+}
 .orders {
   .card {
     min-height: 100rpx;

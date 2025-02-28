@@ -8,7 +8,8 @@ console.log(top)
   <view class="navbar" :style="{ paddingTop: safeAreaInsets?.top + 'px' }">
     <!-- logo文字 -->
     <view class="logo">
-      <image class="logo-image" src="@/static/images/logo.png"></image>
+      <!-- <image class="logo-image" mode="aspectFill" src="@/static/images/logo.png"></image> -->
+      <view class="logo-image"> 潮 童 购 </view>
       <text class="logo-text">新鲜 · 亲民 · 快捷</text>
     </view>
     <!-- 搜索条 -->
@@ -34,14 +35,18 @@ console.log(top)
     height: 64rpx;
     padding-left: 30rpx;
     padding-top: 20rpx;
+    color: #fff;
     .logo-image {
-      width: 166rpx;
-      height: 39rpx;
+      width: 200rpx;
+      height: 50rpx;
+      text-align: center;
+      line-height: 50rpx;
+      font-weight: bold;
+      font-size: 45rpx;
     }
     .logo-text {
       flex: 1;
       line-height: 28rpx;
-      color: #fff;
       margin: 2rpx 0 0 20rpx;
       padding-left: 20rpx;
       border-left: 1rpx solid #fff;

@@ -76,6 +76,7 @@ const onRefresherrefresh = () => {
 <template>
   <view class="index">
     <CustomNavBar />
+    <!-- <uvCustomIcon name="uv-custom-icon" size="20"></uvCustomIcon> -->
     <scroll-view
       scroll-y
       class="scroll"

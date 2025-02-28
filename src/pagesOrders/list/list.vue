@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import OrdersList from './components/OrdersList.vue'
+import ListSkeleton from './components/ListSkeleton.vue'
 
 // tabs 数据
 const orderTabs = ref([
@@ -39,7 +40,7 @@ if (query.type) {
     <swiper class="swiper" :current="activeIndex" @change="activeIndex = $event.detail.current">
       <!-- 滑动项 -->
       <swiper-item v-for="(tab, index) in orderTabs" :key="tab.title">
-        <OrdersList :ordersState="tab.orderState"></OrdersList>
+        <OrdersList :ordersState="tab.orderState" @success="showComponent"></OrdersList>
       </swiper-item>
     </swiper>
   </view>
