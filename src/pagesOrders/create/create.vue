@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getPreOrdersApi, getPreOrdersNowApi } from '@/services/apis/orders'
+import { getPreOrdersApi, getPreOrdersNowApi, saveOrdersApi } from '@/services/apis/orders'
 import type { OrderPreResult } from '@/types/orders'
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
@@ -28,10 +28,10 @@ const getPreOrders = async () => {
   const res = await getPreOrdersApi()
   preOrders.value = res.result
   console.log(preOrders.value?.userAddresses)
-  console.log(defaultAddress.value, 'default address')
+  console.log(selectAddress.value, 'select address')
 }
 const addressStore = useAdressStore()
-const defaultAddress = computed(() => {
+const selectAddress = computed(() => {
   console.log(addressStore.address, 'address')
 
   return addressStore.address || preOrders.value?.userAddresses.find((v) => !!v.isDefault)
@@ -53,6 +53,37 @@ const getPreOrdersNow = async () => {
     preOrders.value = res.result
   }
 }
+const onSubmitOrders = async () => {
+  // console.log(selectAddress.value)
+
+  if (!selectAddress.value) {
+    uni.showToast({
+      title: '请选择收货地址',
+      icon: 'none',
+    })
+    return
+  }
+  const res = await saveOrdersApi({
+    addressId: selectAddress.value!.id,
+    deliveryTimeType: activeDelivery.value.type,
+    buyerMessage: buyerMessage.value,
+    goods: preOrders.value!.goods.map((v) => {
+      return { count: v.count, skuId: v.skuId }
+    }),
+    payChannel: 2,
+    payType: 1,
+  })
+  // 获取订单id
+  const orderId = res.result.id
+  uni.showToast({
+    title: '提交成功',
+    icon: 'none',
+  })
+  // 关闭当前页，跳转到订单详情页
+  setTimeout(() => {
+    uni.redirectTo({ url: `/pagesOrders/detail/detail?id=${orderId}` })
+  }, 500)
+}
 onLoad(() => {
   if (skuId && count) {
     getPreOrdersNow()
@@ -66,20 +97,20 @@ onLoad(() => {
   <scroll-view scroll-y class="viewport">
     <!-- 收货地址 -->
     <navigator
-      v-if="defaultAddress"
+      v-if="selectAddress"
       class="shipment"
       hover-class="none"
       url="/pagesMine/address/address?from=order"
     >
-      <view class="user"> {{ defaultAddress.receiver }} {{ defaultAddress.contact }} </view>
-      <view class="address"> {{ defaultAddress.fullLocation + defaultAddress.address }} </view>
+      <view class="user"> {{ selectAddress.receiver }} {{ selectAddress.contact }} </view>
+      <view class="address"> {{ selectAddress.fullLocation + selectAddress.address }} </view>
       <text class="icon icon-right"></text>
     </navigator>
     <navigator
       v-else
       class="shipment"
       hover-class="none"
-      url="/pagesMember/address/address?from=order"
+      url="/pagesMine/address/address?from=order"
     >
       <view class="address"> 请选择收货地址 </view>
       <text class="icon icon-right"></text>
@@ -144,7 +175,9 @@ onLoad(() => {
     <view class="total-pay symbol">
       <text class="number">{{ preOrders?.summary.totalPayPrice.toFixed(2) }}</text>
     </view>
-    <view class="button" :class="{ disabled: true }"> 提交订单 </view>
+    <view class="button" :class="{ disabled: !selectAddress }" @click="onSubmitOrders">
+      提交订单
+    </view>
   </view>
 </template>
 

@@ -59,12 +59,6 @@
 			"style": {
 				"navigationBarTitleText": "购物车"
 			}
-		},
-		{
-			"path": "pagesOrders/create/create",
-			"style": {
-				"navigationBarTitleText": "填写订单"
-			}
 		}
 	],
 	"globalStyle": {
@@ -138,6 +132,35 @@
 					}
 				}
 			]
+		},
+		{
+			"root": "pagesOrders",
+			"pages": [
+				{
+					"path": "detail/detail",
+					"style": {
+						"navigationBarTitleText": "订单详情"
+					}
+				},
+				{
+					"path": "create/create",
+					"style": {
+						"navigationBarTitleText": "创建订单"
+					}
+				},
+				{
+					"path": "payment/payment",
+					"style": {
+						"navigationBarTitleText": "支付结果"
+					}
+				},
+				{
+					"path": "list/list",
+					"style": {
+						"navigationBarTitleText": "订单列表"
+					}
+				}
+			]
 		}
 	],
 	// 分包预下载规则
@@ -146,6 +169,12 @@
 			"network": "all",
 			"packages": [
 				"pagesMine"
+			]
+		},
+		"pagesOrders/create/create": {
+			"network": "all",
+			"packages": [
+				"pagesOrders"
 			]
 		}
 	}
