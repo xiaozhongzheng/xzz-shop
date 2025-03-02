@@ -78,8 +78,10 @@ let { guessRef, onScrolltolower } = useGuessList()
         >
           {{ item.text }}
         </navigator>
+        <!-- #ifdef MP-WEIXIN -->
         <!-- 客服 -->
         <button class="contact icon-handset" open-type="contact">售后</button>
+        <!-- #endif -->
       </view>
     </view>
     <!-- 猜你喜欢 -->

@@ -7,7 +7,6 @@ import { ref } from 'vue'
 import type { BannerItem, HomeCategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
-import type { GuessInstance } from '@/components/components'
 import PageSkeleton from './components/PageSkeleton.vue'
 import { useGuessList } from '@/composables'
 

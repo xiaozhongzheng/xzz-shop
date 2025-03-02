@@ -44,9 +44,15 @@ export const request = <T>(options: UniApp.RequestOptions) => {
           // 清理用户信息
           const userStore = useUserInfoStore()
           userStore.removeUserInfo()
-          uni.navigateTo({
-            url: '/pages/login/login',
+          uni.showToast({
+            title: '用户还未登录，请先登录',
+            icon: 'none',
           })
+          setTimeout(() => {
+            uni.navigateTo({
+              url: '/pages/login/login',
+            })
+          }, 500)
           reject(res)
         } else {
           // 其他错误

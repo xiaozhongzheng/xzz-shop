@@ -152,7 +152,8 @@
   </view>
 </template>
 
-<style scoped>
+<style lang="scss">
+@import '@/components/styles/XtxSwiper.scss';
 .sk-transparent {
   color: transparent !important;
 }

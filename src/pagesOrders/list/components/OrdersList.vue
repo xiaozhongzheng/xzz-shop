@@ -88,11 +88,14 @@ const emit = defineEmits(['success'])
 const ordersList = ref<OrderItem[]>([])
 const getOrdersList = async () => {
   uni.showLoading({ title: '数据加载中...' })
-  const res = await getOrdersListApi(params)
-  ordersList.value = res.result.items
-  uni.hideLoading()
-  // emit('success', true)
-  isShow.value = true
+  try {
+    const res = await getOrdersListApi(params)
+    ordersList.value = res.result.items
+  } finally {
+    uni.hideLoading()
+    // emit('success', true)
+    isShow.value = true
+  }
 }
 
 const toPayOrders = async (orderId: string) => {
@@ -100,9 +103,11 @@ const toPayOrders = async (orderId: string) => {
     // 开发环境时模拟支付
     await payOrdersMockApi({ orderId })
   } else {
+    // #ifdef MP-WEIXIN
     const res = await payOrdersApi({ orderId })
     // 调起微信支付的功能
     wx.requestPayment(res.result)
+    // #endif
   }
   uni.showToast({
     title: '支付成功',
