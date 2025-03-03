@@ -54,8 +54,6 @@ const getPreOrdersNow = async () => {
   }
 }
 const onSubmitOrders = async () => {
-  // console.log(selectAddress.value)
-
   if (!selectAddress.value) {
     uni.showToast({
       title: '请选择收货地址',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getUserInfoApi, updateUserInfoApi } from '@/services/apis/user'
 import type { Gender, UserDetail, UserParames } from '@/types/user'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import { useUserInfoStore } from '@/stores/modules/user'
 // 获取屏幕边界到安全区域距离
@@ -75,7 +75,7 @@ const onSubmit = async () => {
   }, 500)
 }
 
-onLoad(() => {
+onShow(() => {
   getUserInfo()
 })
 </script>

@@ -24,6 +24,7 @@ let { guessRef, onScrolltolower } = useGuessList()
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
       <view class="overview" v-if="userInfo">
+        <!-- 用户头像 -->
         <navigator url="/pagesMine/profile/profile" hover-class="none">
           <image class="avatar" mode="aspectFill" :src="userInfo.avatar"></image>
         </navigator>
