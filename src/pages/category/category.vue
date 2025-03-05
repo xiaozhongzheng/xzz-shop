@@ -23,10 +23,17 @@ let chidlrenCategory = computed(() => {
   return categoryList.value[activeIndex.value]?.children || []
 })
 let loading = ref(true)
+const query = defineProps<{
+  id: string
+}>()
 
 onLoad(async () => {
   loading.value = true
   await Promise.all([getCategorySwiperList(), getCategoryList()])
+  if (query.id) {
+    activeIndex.value = categoryList.value.findIndex((v) => v.id === query.id)
+  }
+  activeIndex.value = activeIndex.value < 0 ? 0 : activeIndex.value
   loading.value = false
 })
 </script>

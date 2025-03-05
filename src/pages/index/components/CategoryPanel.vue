@@ -12,12 +12,15 @@ defineProps<{
     <navigator
       class="category-item"
       hover-class="none"
-      url="/pages/index/index"
+      :url="`/pages/category/category?id=${item.id}`"
       v-for="item in list"
       :key="item.id"
+      open-type="reLaunch"
     >
       <image class="icon" :src="item.icon"></image>
-      <text class="text">{{ item.name }}</text>
+      <text class="text">{{
+        item.name === '锦鲤' ? '美食' : item.name === '品牌' ? '更多' : item.name
+      }}</text>
     </navigator>
   </view>
 </template>
