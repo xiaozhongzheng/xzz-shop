@@ -14,7 +14,7 @@
             <scroll-view
               :scroll-y="true"
               class="orders OrdersList--orders"
-              enable-back-to-top="true"
+              :enable-back-to-top="true"
             >
               <view class="card OrdersList--card">
                 <view class="status OrdersList--status">

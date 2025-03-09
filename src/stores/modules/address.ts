@@ -43,6 +43,9 @@ export const useAdressStore = defineStore('address', {
     setAddress(val: AddressItem): void {
       this.address = val
     },
+    removeAddress(): void {
+      this.address = {} as AddressItem
+    },
   },
   persist: {
     storage: {

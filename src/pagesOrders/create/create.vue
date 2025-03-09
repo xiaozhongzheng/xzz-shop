@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getPreOrdersApi, getPreOrdersNowApi, saveOrdersApi } from '@/services/apis/orders'
 import type { OrderPreResult } from '@/types/orders'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import { useAdressStore } from '@/stores/modules/address'
 // 获取屏幕边界到安全区域距离
@@ -32,8 +32,6 @@ const getPreOrders = async () => {
 }
 const addressStore = useAdressStore()
 const selectAddress = computed(() => {
-  console.log(addressStore.address, 'address')
-
   return addressStore.address || preOrders.value?.userAddresses.find((v) => !!v.isDefault)
 })
 const query = defineProps<{
@@ -82,90 +80,95 @@ const onSubmitOrders = async () => {
     uni.redirectTo({ url: `/pagesOrders/detail/detail?id=${orderId}` })
   }, 500)
 }
-onLoad(() => {
+onShow(async () => {
+  uni.showLoading({ title: '页面加载中...', icon: 'none', mask: true })
   if (skuId && count) {
-    getPreOrdersNow()
+    await getPreOrdersNow()
   } else {
-    getPreOrders()
+    await getPreOrders()
   }
+  uni.hideLoading()
 })
 </script>
 
 <template>
   <scroll-view scroll-y class="viewport">
-    <!-- 收货地址 -->
-    <navigator
-      v-if="selectAddress"
-      class="shipment"
-      hover-class="none"
-      url="/pagesMine/address/address?from=order"
-    >
-      <view class="user"> {{ selectAddress.receiver }} {{ selectAddress.contact }} </view>
-      <view class="address"> {{ selectAddress.fullLocation + selectAddress.address }} </view>
-      <text class="icon icon-right"></text>
-    </navigator>
-    <navigator
-      v-else
-      class="shipment"
-      hover-class="none"
-      url="/pagesMine/address/address?from=order"
-    >
-      <view class="address"> 请选择收货地址 </view>
-      <text class="icon icon-right"></text>
-    </navigator>
-
-    <!-- 商品信息 -->
-    <view class="goods">
+    <template v-if="preOrders">
+      <!-- 收货地址 -->
       <navigator
-        v-for="item in preOrders?.goods"
-        :key="item.skuId"
-        :url="`/pages/goods/goods?id=${item.id}`"
-        class="item"
+        v-if="Object.keys(selectAddress).length"
+        class="shipment"
         hover-class="none"
+        url="/pagesMine/address/address?from=order"
       >
-        <image class="picture" :src="item.picture" />
-        <view class="meta">
-          <view class="name ellipsis"> {{ item.name }} </view>
-          <view class="attrs">{{ item.attrsText }}</view>
-          <view class="prices">
-            <view class="pay-price symbol">{{ item.payPrice }}</view>
-            <view class="price symbol">{{ item.price }}</view>
-          </view>
-          <view class="count">x{{ item.count }}</view>
-        </view>
+        <view class="user"> {{ selectAddress.receiver }} {{ selectAddress.contact }} </view>
+        <view class="address"> {{ selectAddress.fullLocation + selectAddress.address }} </view>
+        <text class="icon icon-right"></text>
       </navigator>
-    </view>
+      <navigator
+        v-else
+        class="shipment"
+        hover-class="none"
+        url="/pagesMine/address/address?from=order"
+      >
+        <view class="address"> 请选择收货地址 </view>
+        <text class="icon icon-right"></text>
+      </navigator>
 
-    <!-- 配送及支付方式 -->
-    <view class="related">
-      <view class="item">
-        <text class="text">配送时间</text>
-        <picker :range="deliveryList" range-key="text" @change="onChangeDelivery">
-          <view class="icon-fonts picker">{{ activeDelivery.text }}</view>
-        </picker>
+      <!-- 商品信息 -->
+      <view class="goods">
+        <navigator
+          v-for="item in preOrders?.goods"
+          :key="item.skuId"
+          :url="`/pages/goods/goods?id=${item.id}`"
+          class="item"
+          hover-class="none"
+        >
+          <image class="picture" :src="item.picture" />
+          <view class="meta">
+            <view class="name ellipsis"> {{ item.name }} </view>
+            <view class="attrs">{{ item.attrsText }}</view>
+            <view class="prices">
+              <view class="pay-price symbol">{{ item.payPrice }}</view>
+              <view class="price symbol">{{ item.price }}</view>
+            </view>
+            <view class="count">x{{ item.count }}</view>
+          </view>
+        </navigator>
       </view>
-      <view class="item">
-        <text class="text">订单备注</text>
-        <input
-          class="input"
-          :cursor-spacing="30"
-          placeholder="选题，建议留言前先与商家沟通确认"
-          v-model="buyerMessage"
-        />
-      </view>
-    </view>
 
-    <!-- 支付金额 -->
-    <view class="settlement">
-      <view class="item">
-        <text class="text">商品总价: </text>
-        <text class="number symbol">{{ preOrders?.summary.totalPrice }}</text>
+      <!-- 配送及支付方式 -->
+      <view class="related">
+        <view class="item">
+          <text class="text">配送时间</text>
+          <picker :range="deliveryList" range-key="text" @change="onChangeDelivery">
+            <view class="icon-fonts picker">{{ activeDelivery.text }}</view>
+          </picker>
+        </view>
+        <view class="item">
+          <text class="text">订单备注</text>
+          <input
+            class="input"
+            :cursor-spacing="30"
+            placeholder="选题，建议留言前先与商家沟通确认"
+            v-model="buyerMessage"
+          />
+        </view>
       </view>
-      <view class="item">
-        <text class="text">运费: </text>
-        <text class="number symbol">{{ preOrders?.summary.postFee }}</text>
+
+      <!-- 支付金额 -->
+      <view class="settlement">
+        <view class="item">
+          <text class="text">商品总价: </text>
+          <text class="number symbol">{{ preOrders?.summary.totalPrice }}</text>
+        </view>
+        <view class="item">
+          <text class="text">运费: </text>
+          <text class="number symbol">{{ preOrders?.summary.postFee }}</text>
+        </view>
       </view>
-    </view>
+    </template>
+    <template v-else> </template>
   </scroll-view>
 
   <!-- 吸底工具栏 -->

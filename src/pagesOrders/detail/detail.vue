@@ -13,6 +13,7 @@ import { OrderState, orderStateList } from '@/types/constant'
 import type { OrderLogisticResult, OrderResult } from '@/types/orders'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
+import DetailSkeleton from './components/DetailSkeleton.vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -41,6 +42,7 @@ const query = defineProps<{
   id: string
 }>()
 const orders = ref<OrderResult>()
+console.log(orders.value, 'orders')
 const getOrderDetails = async () => {
   const { result } = await getOrderDetailsApi(query.id)
   orders.value = result
@@ -286,7 +288,7 @@ onLoad(() => {
     </template>
     <template v-else>
       <!-- 骨架屏组件 -->
-      <PageSkeleton />
+      <DetailSkeleton></DetailSkeleton>
     </template>
   </scroll-view>
   <!-- 取消订单弹窗 -->

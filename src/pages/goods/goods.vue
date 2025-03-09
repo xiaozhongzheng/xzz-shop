@@ -13,6 +13,8 @@ import type {
   SkuPopupLocaldata,
 } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import { addCartApi } from '@/services/apis/cart'
+import { useAdressStore } from '@/stores/modules/address'
+import type { AddressItem } from '@/types/address'
 const query = defineProps<{
   id: string
 }>()
@@ -43,8 +45,10 @@ let getGoods = async () => {
 }
 console.log(query, 'goodsQuery')
 
-onLoad(() => {
-  getGoods()
+onLoad(async () => {
+  uni.showLoading({ title: '页面加载中...', icon: 'none', mask: true })
+  await getGoods()
+  uni.hideLoading()
 })
 let current = ref(1)
 let onChange: UniHelper.SwiperOnChange = (e) => {
@@ -61,14 +65,27 @@ let popupRef = ref<{
   open: (type?: UniHelper.UniPopupType) => void
   close: () => void
 }>()
-let popupName = ref<'address' | 'service'>()
+let popupName = ref<'address' | 'service' | ''>('')
+console.log(popupName.value, '&&&')
 let openPopup = (name: typeof popupName.value) => {
   popupName.value = name
   popupRef.value?.open()
 }
 let closePopup = () => {
   popupRef.value?.close()
+  popupName.value = ''
 }
+const useAdress = useAdressStore()
+const handleSuccess = (val: AddressItem) => {
+  useAdress.setAddress(val)
+  popupRef.value?.close()
+  popupName.value = ''
+}
+const selectAddress = computed(() => {
+  const item = useAdress.address
+  // console.log(item, 'item')
+  return JSON.stringify(item) !== '{}' ? item.fullLocation + item.address : '请选择收货地址'
+})
 enum SkuMode {
   Both = 1,
   Cart = 2,
@@ -100,7 +117,6 @@ let onAddCart = async (ev: SkuPopupEvent) => {
 }
 let onBuyNow = (ev: any) => {
   // console.log(ev, 'buynow')
-
   uni.navigateTo({
     url: `/pagesOrders/create/create?skuId=${ev._id}&count=${ev.buy_num}`,
   })
@@ -156,7 +172,9 @@ let onBuyNow = (ev: any) => {
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text class="text ellipsis"> 请选择收获地址 </text>
+          <text class="text ellipsis">
+            {{ selectAddress }}
+          </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
@@ -239,9 +257,15 @@ let onBuyNow = (ev: any) => {
     </view>
   </view>
 
-  <uni-popup ref="popupRef" type="bottom" border-radius="10px 10px 0 0" background-color="#fff">
+  <uni-popup
+    v-if="popupName"
+    ref="popupRef"
+    type="bottom"
+    border-radius="10px 10px 0 0"
+    background-color="#fff"
+  >
     <ServicePanel v-if="popupName === 'service'" @close="closePopup" />
-    <AddressPanel v-else @close="closePopup" />
+    <AddressPanel v-else @close="closePopup" @success="handleSuccess" />
     <!-- <button @click="popupRef?.close()">关闭按钮</button> -->
   </uni-popup>
 </template>

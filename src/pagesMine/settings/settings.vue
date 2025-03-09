@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useUserInfoStore } from '@/stores/modules/user'
+import { useAdressStore } from '@/stores/modules/address'
 const userStore = useUserInfoStore()
+const useAddress = useAdressStore()
 let logout = () => {
   uni.showModal({
     content: '是否退出登录',
@@ -8,6 +10,7 @@ let logout = () => {
       if (res.confirm) {
         // 点击确认
         userStore.removeUserInfo()
+        useAddress.removeAddress()
         uni.navigateBack()
       }
     },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import OrdersList from './components/OrdersList.vue'
-import ListSkeleton from './components/ListSkeleton.vue'
 
 // tabs 数据
 const orderTabs = ref([
@@ -17,7 +16,7 @@ const query = defineProps<{
   type?: number
 }>()
 if (query.type) {
-  activeIndex.value = query.type
+  activeIndex.value = +query.type // type是string类型的参数，需转化为number类型
 }
 </script>
 
@@ -39,8 +38,8 @@ if (query.type) {
     <!-- 滑动容器 -->
     <swiper class="swiper" :current="activeIndex" @change="activeIndex = $event.detail.current">
       <!-- 滑动项 -->
-      <swiper-item v-for="(tab, index) in orderTabs" :key="tab.title">
-        <OrdersList :ordersState="tab.orderState" @success="showComponent"></OrdersList>
+      <swiper-item v-for="tab in orderTabs" :key="tab.title">
+        <OrdersList :ordersState="tab.orderState"></OrdersList>
       </swiper-item>
     </swiper>
   </view>
