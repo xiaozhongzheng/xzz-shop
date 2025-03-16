@@ -52,14 +52,15 @@ const onTimeup = () => {
   orders.value!.orderState = OrderState.YiQuXiao
 }
 const toPayOrders = async () => {
-  if (import.meta.env.DEV) {
-    // 开发环境时模拟支付
-    await payOrdersMockApi({ orderId: query.id })
-  } else {
-    const res = await payOrdersApi({ orderId: query.id })
-    // 调起微信支付的功能
-    wx.requestPayment(res.result)
-  }
+  // if (import.meta.env.DEV) {
+  //   // 开发环境时模拟支付
+  //   await payOrdersMockApi({ orderId: query.id })
+  // } else {
+  //   const res = await payOrdersApi({ orderId: query.id })
+  //   // 调起微信支付的功能
+  //   wx.requestPayment(res.result)
+  // }
+  await payOrdersMockApi({ orderId: query.id })
   uni.showToast({
     title: '支付成功',
     icon: 'none',

@@ -4,7 +4,6 @@ import type {
   OrderListParams,
   OrderListResult,
   OrderLogisticResult,
-  OrderPreGoods,
   OrderPreResult,
   OrderResult,
 } from '@/types/orders'

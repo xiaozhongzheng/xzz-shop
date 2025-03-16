@@ -326,7 +326,7 @@ page {
   .preview {
     height: 750rpx;
     position: relative;
-    .image {
+    image {
       width: 750rpx;
       height: 750rpx;
     }

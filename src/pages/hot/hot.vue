@@ -45,7 +45,7 @@ let onScrolltolower = async () => {
     curSubType.goodsItems.page++
   } else {
     curSubType.noMoreData = true
-    return uni.showToast({  
+    return uni.showToast({
       icon: 'none',
       title: '没有更多数据了~',
     })
@@ -76,6 +76,7 @@ let onScrolltolower = async () => {
         class="text"
         :class="{ active: activeIndex === index }"
         v-for="(item, index) in hot?.subTypes"
+        :key="item.id"
         @click="onChangeIndex(index)"
       >
         {{ item.title }}
@@ -133,6 +134,10 @@ page {
   position: absolute;
   left: 0;
   top: 0;
+  image {
+    width: 100%;
+    height: 100%;
+  }
 }
 .scroll-view {
   flex: 1;
