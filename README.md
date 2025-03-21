@@ -9,8 +9,13 @@
 - 组件库：[uni-ui](https://uniapp.dcloud.net.cn/component/uniui/uni-ui.html)
 
 ## 运行程序
+1. node版本
+   
+```shell
+node 16
+ ```
 
-1. 安装依赖
+3. 安装依赖
 
 ```shell
 # npm
@@ -20,7 +25,7 @@ npm i --registry=https://registry.npmmirror.com
 pnpm i --registry=https://registry.npmmirror.com
 ```
 
-2. 运行程序
+3. 运行程序
 
 ```shell
 # 微信小程序端
