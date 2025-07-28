@@ -109,12 +109,14 @@ const state = reactive({
   startIndex: 0,
   endIndex: 0,
 })
-
+const scrollRef = ref(null)
+onMounted(() => {
+  console.log(scrollRef, '&&')
+})
 const handleScroll = () => {
-  setTimeout(() => {
-    console.log(666)
-  }, 500)
+  console.log(scrollRef.value.innerHTML)
 }
+const debounceScroll = debounce(handleScroll, 500)
 </script>
 
 <template>
@@ -122,17 +124,17 @@ const handleScroll = () => {
   <view class="caption">
     <text class="text">猜你喜欢</text>
   </view>
-  <view class="scrollBox" @scroll="handleScroll">
-    <view class="guessBox">
+  <view class="scrollBox" @scroll="debounceScroll">
+    <view class="guessBox" ref="scrollRef">
       <navigator
         class="guess-item"
-        v-for="item in items"
+        v-for="(item, index) in [...items, ...items]"
         :key="item.id"
         :url="`/pages/goods/goods?id=${item.id}`"
       >
         <image class="image" mode="aspectFill" :src="item.picture"></image>
         <view>
-          <view class="name"> {{ item.name.slice(0, 5) }} </view>
+          <view class="name"> {{ item.name.slice(0, 5) + index }} </view>
           <view class="price">
             <text class="small">¥</text>
             <text>{{ item.price }}</text>
@@ -176,7 +178,6 @@ const handleScroll = () => {
 /* 猜你喜欢 */
 .scrollBox {
   height: 600rpx;
-  padding: 0 20rpx;
   background-color: pink;
   overflow-y: auto;
 
