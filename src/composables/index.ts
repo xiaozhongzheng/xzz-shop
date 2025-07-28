@@ -2,8 +2,8 @@
 import type { GuessInstance } from '@/components/components'
 import { ref } from 'vue'
 export const useGuessList = () => {
-  let guessRef = ref<GuessInstance>()
-  let onScrolltolower = () => {
+  const guessRef = ref<GuessInstance>()
+  const onScrolltolower = () => {
     guessRef.value?.getGuessList()
   }
   return {

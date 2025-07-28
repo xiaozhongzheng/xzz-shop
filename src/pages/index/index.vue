@@ -89,7 +89,7 @@ const onRefresherrefresh = () => {
         <XtxSwiper :list="bannerList" />
         <CategoryPanel :list="homeCategoryList" />
         <HotPanel :list="homeHotList" />
-        <XtxGuess ref="guessRef" />
+        <XtxGuess1 ref="guessRef" />
       </template>
     </scroll-view>
   </view>

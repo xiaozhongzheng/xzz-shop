@@ -5,6 +5,7 @@ import { ref } from 'vue'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 import { useGuessList } from '@/composables'
+import { onLoad } from '@dcloudio/uni-app'
 // 订单选项
 const orderTypes = [
   { type: 1, text: '待付款', icon: 'icon-currency' },
@@ -15,11 +16,12 @@ const orderTypes = [
 // 将数据变成响应式对象
 let { userInfo } = storeToRefs(useUserInfoStore())
 
-let { guessRef, onScrolltolower } = useGuessList()
+// let { guessRef, onScrolltolower } = useGuessList()
 </script>
 
 <template>
-  <scroll-view class="viewport" scroll-y enable-back-to-top @scrolltolower="onScrolltolower">
+  <!-- <scroll-view class="viewport" scroll-y enable-back-to-top @scrolltolower="onScrolltolower"> -->
+  <view class="viewport">
     <!-- 个人资料 -->
     <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
       <!-- 情况1：已登录 -->
@@ -87,9 +89,10 @@ let { guessRef, onScrolltolower } = useGuessList()
     </view>
     <!-- 猜你喜欢 -->
     <view class="guess">
-      <XtxGuess ref="guessRef" />
+      <XtxGuess1 ref="guessRef" />
     </view>
-  </scroll-view>
+  </view>
+  <!-- </scroll-view> -->
 </template>
 
 <style lang="scss">
@@ -100,7 +103,6 @@ page {
 }
 
 .viewport {
-  height: 100%;
   background-repeat: no-repeat;
   background-image: url(https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/center_bg.png);
   background-size: 100% auto;
@@ -227,6 +229,5 @@ page {
 /* 猜你喜欢 */
 .guess {
   background-color: #f7f7f8;
-  margin-top: 20rpx;
 }
 </style>
