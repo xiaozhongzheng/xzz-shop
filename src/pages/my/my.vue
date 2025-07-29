@@ -88,7 +88,7 @@ let { userInfo } = storeToRefs(useUserInfoStore())
       </view>
     </view>
     <!-- 猜你喜欢 -->
-    <view class="guess">
+    <view class="guessContainer">
       <XtxGuess1 ref="guessRef" />
     </view>
   </view>
@@ -227,7 +227,7 @@ page {
 }
 
 /* 猜你喜欢 */
-.guess {
+.guessContainer {
   background-color: #f7f7f8;
 }
 </style>

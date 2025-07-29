@@ -3,10 +3,10 @@
 import { getGoodsGuessListApi } from '@/services/apis/home'
 import type { PageParams } from '@/types/global'
 import type { GuessItem } from '@/types/home'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { debounce } from '@/utils'
 let guessList = ref<GuessItem[]>([])
-const items = [
+const dataList = ref([
   {
     id: '4026198',
     name: '经典格子元素，男童加绒格子衬衫',
@@ -87,36 +87,70 @@ const items = [
     picture: 'https://yanxuan-item.nosdn.127.net/c43370d1090d445913dcb69a34875a59.jpg',
     orderNum: 374,
   },
-]
+])
+const totalHeight = ref(0)
 // Reqired 可以将参数变为必选
 let queryParams: Required<PageParams> = {
   page: 1,
   pageSize: 10,
 }
-let getGuessList = async () => {
-  let { result } = await getGoodsGuessListApi(queryParams)
-  guessList.value = result.items
-  console.log(getGuessList(), '***')
-}
+// let getGuessList = async () => {
+//   let { result } = await getGoodsGuessListApi(queryParams)
+//   guessList.value = result.dataList
+// }
 
 onMounted(() => {
   // getGuessList()
 })
-const itemSize = 200 // 列表每个项的高度
+const itemHeight = 200 // 列表每个项的高度
 const visibleSize = 600 // 可视化区域
-const state = reactive({
-  scrollOffset: 0,
-  startIndex: 0,
-  endIndex: 0,
+const startIndex = ref(0)
+const endIndex = ref(0)
+const scrollTop = ref(0)
+const startOffset = computed(() => {
+  return startIndex.value * itemHeight
 })
-const scrollRef = ref(null)
+const scrollRef = ref()
+const showSize = Math.floor(visibleSize / itemHeight) // 可是区域展示item的个数
+console.log()
 onMounted(() => {
-  console.log(scrollRef, '&&')
+  totalHeight.value = itemHeight * dataList.value.length
+  console.log(totalHeight.value, 'totalHeight.value')
+  // guessList.value = dataList.value
+  handleScroll()
 })
 const handleScroll = () => {
-  console.log(scrollRef.value.innerHTML)
+  // console.log(scrollRef.value.$el.scrollTop)
+  const scorllDom = scrollRef.value.$el
+  scrollTop.value = scorllDom.scrollTop * 2 // 获取滚动条滚动的距离
+  console.log(scrollTop.value, 'scrollTop')
+  startIndex.value = preStartIndex.value
+  endIndex.value = nextEndIndex.value
+  console.log(startIndex.value, endIndex.value, 'index')
 }
-const debounceScroll = debounce(handleScroll, 500)
+const preStartIndex = computed(() => {
+  let index = Math.floor(scrollTop.value / itemHeight)
+  if (index - 2 > 0) {
+    return index - 2
+  }
+  return index
+})
+const nextEndIndex = computed(() => {
+  let index = startIndex.value + showSize
+  const lastIndex = dataList.value.length
+  if (index > lastIndex) {
+    // 表示没有更多数据展示了
+    return dataList.value.length - 1
+  }
+  index += 2 // 向下多展示2条数据，防止滑动时出现白屏
+
+  return index > lastIndex ? lastIndex : index
+})
+const visibleData = computed(() => {
+  // 计算可视区域要展示的数据
+  return dataList.value.slice(startIndex.value, endIndex.value)
+})
+const debounceScroll = debounce(handleScroll, 100)
 </script>
 
 <template>
@@ -124,22 +158,41 @@ const debounceScroll = debounce(handleScroll, 500)
   <view class="caption">
     <text class="text">猜你喜欢</text>
   </view>
-  <view class="scrollBox" @scroll="debounceScroll">
-    <view class="guessBox" ref="scrollRef">
+  <view class="scrollBox" @scroll="debounceScroll" ref="scrollRef">
+    <view
+      :style="{
+        height: totalHeight + 'rpx',
+        opacity: 0,
+      }"
+    ></view>
+    <view
+      class="guessListBox"
+      :style="{
+        top: `${startOffset}rpx`,
+      }"
+    >
       <navigator
         class="guess-item"
-        v-for="(item, index) in [...items, ...items]"
+        v-for="item in visibleData"
         :key="item.id"
         :url="`/pages/goods/goods?id=${item.id}`"
+        :style="{ height: itemHeight + 'rpx' }"
       >
+        <!-- <view
+        class="guess-item"
+        v-for="item in visibleData"
+        :key="item.id"
+        :style="{ height: itemHeight + 'rpx' }"
+      > -->
         <image class="image" mode="aspectFill" :src="item.picture"></image>
         <view>
-          <view class="name"> {{ item.name.slice(0, 5) + index }} </view>
+          <view class="name"> {{ item.name }} </view>
           <view class="price">
             <text class="small">¥</text>
             <text>{{ item.price }}</text>
           </view>
         </view>
+        <!-- </view> -->
       </navigator>
     </view>
   </view>
@@ -160,7 +213,7 @@ const debounceScroll = debounce(handleScroll, 500)
   .text {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-datalist: center;
     padding: 0 28rpx 0 30rpx;
 
     &::before,
@@ -178,19 +231,20 @@ const debounceScroll = debounce(handleScroll, 500)
 /* 猜你喜欢 */
 .scrollBox {
   height: 600rpx;
-  background-color: pink;
   overflow-y: auto;
-
-  .guessBox {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  position: relative;
+  .guessListBox {
+    width: 700rpx;
+    padding: 0 30rpx;
+    position: absolute;
+    left: 20rpx;
+    top: 0;
     .guess-item {
-      width: 345rpx;
-      height: 200rpx;
-      padding: 24rpx 20rpx 20rpx;
+      width: 100%;
+      // height: 200rpx;
+      padding: 24rpx 20rpx;
       margin-bottom: 20rpx;
-      border-radius: 10rpx;
+      border-radius: 20rpx;
       overflow: hidden;
       background-color: #fff;
       display: flex;
@@ -202,6 +256,7 @@ const debounceScroll = debounce(handleScroll, 500)
       }
       .name {
         margin: 10rpx 0;
+        width: 300rpx;
         font-size: 26rpx;
         color: #262626;
         overflow: hidden;
