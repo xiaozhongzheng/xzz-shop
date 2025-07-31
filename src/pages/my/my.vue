@@ -15,7 +15,10 @@ const orderTypes = [
 ]
 // 将数据变成响应式对象
 let { userInfo } = storeToRefs(useUserInfoStore())
-
+console.log(window, 'window')
+const handleContact = () => {
+  window.open('tel:400-123-4567')
+}
 // let { guessRef, onScrolltolower } = useGuessList()
 </script>
 
@@ -81,6 +84,10 @@ let { userInfo } = storeToRefs(useUserInfoStore())
         >
           {{ item.text }}
         </navigator>
+        <!-- #ifdef H5-->
+        <!-- 客服 -->
+        <button class="contact icon-handset" @click="handleContact">售后</button>
+        <!-- #endif -->
         <!-- #ifdef MP-WEIXIN -->
         <!-- 客服 -->
         <button class="contact icon-handset" open-type="contact">售后</button>

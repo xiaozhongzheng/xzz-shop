@@ -69,6 +69,7 @@ const onSubmitOrders = async () => {
     payChannel: 2,
     payType: 1,
   })
+  console.log(res, 'res---')
   // 获取订单id
   const orderId = res.result.id
   uni.showToast({

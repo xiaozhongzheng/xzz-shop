@@ -5,7 +5,7 @@ import type {
   OrderListResult,
   OrderLogisticResult,
   OrderPreResult,
-  OrderResult,
+  OrderDetailResult,
 } from '@/types/orders'
 import { request } from '@/utils/request'
 
@@ -37,7 +37,7 @@ export const saveOrdersApi = (data: OrderCreateParams) => {
 }
 
 export const getOrderDetailsApi = (id: string) => {
-  return request<OrderResult>({
+  return request<OrderDetailResult>({
     method: 'GET',
     url: `/member/order/${id}`,
   })
@@ -63,7 +63,7 @@ export const payOrdersMockApi = (data: { orderId: string }) => {
 
 // 在开发时模拟发货
 export const orderConsignmentApi = (id: string) => {
-  return request<OrderResult>({
+  return request<OrderDetailResult>({
     method: 'GET',
     url: `/member/order/consignment/${id}`,
   })
@@ -71,7 +71,7 @@ export const orderConsignmentApi = (id: string) => {
 
 // 确认收货
 export const orderReceiptApi = (id: string) => {
-  return request<OrderResult>({
+  return request<OrderDetailResult>({
     method: 'PUT',
     url: `/member/order/${id}/receipt`,
   })

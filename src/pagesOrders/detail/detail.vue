@@ -10,7 +10,7 @@ import {
   payOrdersMockApi,
 } from '@/services/apis/orders'
 import { OrderState, orderStateList } from '@/types/constant'
-import type { OrderLogisticResult, OrderResult } from '@/types/orders'
+import type { OrderLogisticResult, OrderDetailResult } from '@/types/orders'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import DetailSkeleton from './components/DetailSkeleton.vue'
@@ -41,7 +41,7 @@ const onCopy = (id: string) => {
 const query = defineProps<{
   id: string
 }>()
-const orders = ref<OrderResult>()
+const orders = ref<OrderDetailResult>()
 console.log(orders.value, 'orders')
 const getOrderDetails = async () => {
   const { result } = await getOrderDetailsApi(query.id)

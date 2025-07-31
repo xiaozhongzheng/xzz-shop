@@ -70,7 +70,7 @@ export type OrderCreateResult = {
 }
 
 /** 订单详情 返回信息 */
-export type OrderResult = {
+export type OrderDetailResult = {
   /** 订单编号 */
   id: string
   /** 订单状态，1为待付款、2为待发货、3为待收货、4为待评价、5为已完成、6为已取消 */
@@ -158,7 +158,7 @@ export type OrderListResult = {
 }
 
 /** 订单列表项 */
-export type OrderItem = OrderResult & {
+export type OrderItem = OrderDetailResult & {
   /** 总件数 */
   totalNum: number
 }

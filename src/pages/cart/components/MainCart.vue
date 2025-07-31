@@ -14,6 +14,7 @@ const cartList = ref<CartItem[]>([])
 const getCartList = async () => {
   const { result } = await getCartListApi()
   cartList.value = result
+  console.log(result, 'result')
 }
 const userStore = useUserInfoStore()
 const removeCart = (id: string) => {
@@ -135,6 +136,50 @@ onShow(() => {
             </template>
           </uni-swipe-action-item>
         </uni-swipe-action>
+        <!-- #ifdef H5 -->
+        <view v-for="item in cartList" :key="item.skuId" class="cart-swipe">
+          <!-- 商品信息 -->
+          <view class="goods">
+            <!-- 选中状态 -->
+            <text
+              class="checkbox"
+              :class="{ checked: item.selected }"
+              @tap="onChangeSelect(item)"
+            ></text>
+            <navigator
+              :url="`/pages/goods/goods?id=${item.id}`"
+              hover-class="none"
+              class="navigator"
+            >
+              <image mode="aspectFill" class="picture" :src="item.picture"></image>
+              <view class="meta">
+                <view class="name ellipsis">{{ item.name }}</view>
+                <view class="attrsText ellipsis">{{ item.attrsText }}</view>
+                <view class="price">{{ item.nowPrice }}</view>
+              </view>
+            </navigator>
+            <!-- 商品数量 -->
+            <view class="count">
+              <!-- <text class="text">-</text>
+                <input class="input" type="number" :value="item.count.toString()" />
+                <text class="text">+</text> -->
+              <vk-data-input-number-box
+                v-model="item.count"
+                :min="1"
+                :max="item.stock"
+                :index="item.skuId"
+                @change="onChangeNumber"
+              ></vk-data-input-number-box>
+            </view>
+          </view>
+          <!-- 右侧删除按钮 -->
+          <template #right>
+            <view class="cart-swipe-right">
+              <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
+            </view>
+          </template>
+        </view>
+        <!-- #endif -->
       </view>
       <!-- 购物车空状态 -->
       <view class="cart-blank" v-else>

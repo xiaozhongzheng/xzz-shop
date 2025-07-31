@@ -24,6 +24,7 @@ let getGuessList = async () => {
   handleScroll()
 }
 onMounted(() => {
+  console.log(scrollRef.value.$el.height, '===')
   getGuessList()
 })
 onShow(() => {
@@ -90,7 +91,12 @@ const visibleData = computed(() => {
   <view class="caption">
     <text class="text">猜你喜欢</text>
   </view>
-  <view class="scrollBox" @scroll="debounceScroll" ref="scrollRef">
+  <view
+    class="scrollBox"
+    @scroll="debounceScroll"
+    ref="scrollRef"
+    :style="{ height: visibleSize + 'rpx' }"
+  >
     <!-- 重点：使用一个空的盒子撑开父盒子，该盒子的高度取决于所有数据的高度和 -->
     <view
       :style="{
@@ -156,7 +162,7 @@ const visibleData = computed(() => {
 
 /* 猜你喜欢 */
 .scrollBox {
-  height: 600rpx;
+  // height: 600rpx;
   overflow-y: auto;
   position: relative;
   .guessListBox {

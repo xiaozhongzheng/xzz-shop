@@ -14,7 +14,9 @@ const saveAddress = (item: AddressItem) => {
   addressStore.setAddress(item)
   uni.navigateBack()
 }
-
+const toEditPage = (item: any) => {
+  uni.navigateTo({ url: `/pagesMine/address-form/address-form?id=${item.id}` })
+}
 onShow(() => {
   // 在每次页面展示的时候，都要重新调用接口
   getAddressList()
@@ -29,21 +31,14 @@ onShow(() => {
         <view class="address-list">
           <!-- 收货地址项 -->
           <view class="item" v-for="item in addressList" :key="item.id">
-            <view class="item-content" @tap="saveAddress(item)">
+            <view class="item-content" @click="saveAddress(item)">
               <view class="user">
                 {{ item.receiver }}
                 <text class="contact">{{ item.contact }}</text>
                 <text v-if="item.isDefault" class="badge">默认</text>
               </view>
               <view class="locate">{{ item.fullLocation }} {{ item.address }}</view>
-              <navigator
-                class="edit"
-                hover-class="none"
-                :url="`/pagesMine/address-form/address-form?id=${item.id}`"
-                @tap.stop="() => {}"
-              >
-                修改
-              </navigator>
+              <view class="edit" hover-class="none" @click.stop="toEditPage(item)"> 修改 </view>
             </view>
           </view>
         </view>
