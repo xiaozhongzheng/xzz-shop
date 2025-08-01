@@ -190,7 +190,11 @@ export const useCart = () => {
 
   // 计算属性：选中商品总价
   const selectedTotalPrice = computed(() => {
-    return selectedItems.value.reduce((sum, item) => sum + item.nowPrice * item.count, 0)
+    const totalPrice = selectedItems.value.reduce(
+      (sum, item) => sum + item.nowPrice * item.count,
+      0,
+    )
+    return totalPrice
   })
 
   // 计算属性：购物车商品总数
@@ -209,7 +213,7 @@ export const useCart = () => {
   })
 
   // 清空购物车
-  const clearCart = async () => {
+  const clearCartList = async () => {
     if (cartList.value.length === 0) return
     const ids = cartList.value.map((item) => item.skuId)
     await removeFromCart(ids)
@@ -234,7 +238,7 @@ export const useCart = () => {
     updateCartNumber,
     updateCartSelected,
     updateAllSelected,
-    clearCart,
+    clearCartList,
     clearIneffectiveItems,
     mergeLocalCartToServer,
 

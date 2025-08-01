@@ -118,8 +118,8 @@ let onAddCart = async (ev: SkuPopupEvent) => {
     name: goods_name,
     picture: image,
     count: buy_num,
-    price,
-    nowPrice: price,
+    price: price / 100,
+    nowPrice: price / 100,
     stock,
     attrsText: sku_name_arr.join(''),
   })
