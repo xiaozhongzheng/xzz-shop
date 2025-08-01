@@ -8,7 +8,6 @@ import type { BannerItem, HomeCategoryItem, HotItem } from '@/types/home'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
 import PageSkeleton from './components/PageSkeleton.vue'
-import { useGuessList } from '@/composables'
 
 let bannerList = ref<BannerItem[]>([])
 let getHomeBannerList = async () => {
@@ -36,7 +35,7 @@ let getHomeHotList = async () => {
 //   // console.log(guessRef.value)
 //   guessRef.value?.getGuessList()
 // }
-let { guessRef, onScrolltolower } = useGuessList()
+// let { guessRef, onScrolltolower } = useGuessList()
 
 // 表示页面是否在加载
 let loading = ref(true)
@@ -52,12 +51,12 @@ const onRefresherrefresh = () => {
   // await getHomeCategoryList()
   // await getHomeHotList()
   // 调用子组件的重置数据的方法
-  guessRef.value?.resetData()
+  // XtxGuess.value?.resetData()
   Promise.all([
     getHomeBannerList(),
     getHomeCategoryList(),
     getHomeHotList(),
-    guessRef.value?.getGuessList(),
+    // guessRef.value?.getGuessList(),
   ])
     .then((res) => {})
     .catch((err) => {
@@ -81,7 +80,6 @@ const onRefresherrefresh = () => {
       class="scroll"
       refresher-enabled
       @refresherrefresh="onRefresherrefresh"
-      @scrolltolower="onScrolltolower"
       :refresher-triggered="showRefresh"
     >
       <PageSkeleton v-if="loading" />

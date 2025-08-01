@@ -41,7 +41,7 @@ export const useUserInfoStore = defineStore('userInfo', {
   getters: {
     getUserInfo: (state): LoginResult => state.userInfo as LoginResult,
     isExistUserInfo(state): boolean {
-      return Object.keys(state.userInfo).length > 0
+      return !!state.userInfo && Object.keys(state.userInfo).length > 0
     },
   },
   actions: {

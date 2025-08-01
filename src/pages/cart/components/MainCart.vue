@@ -7,9 +7,12 @@
 // } from '@/services/apis/cart'
 import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
+import { useUserInfoStore } from '@/stores/modules/user'
 // import { computed, ref } from 'vue'
 // import { useUserInfoStore } from '@/stores/modules/user'
 import { useCart } from '@/composables'
+import { storeToRefs } from 'pinia'
+import { watch } from 'vue'
 const {
   cartList,
   loading,
@@ -22,7 +25,15 @@ const {
   selectedCount: selectCartNumber,
   selectedTotalPrice: selectCartPrice,
 } = useCart()
-
+// 用户状态
+const { isExistUserInfo } = storeToRefs(useUserInfoStore())
+watch(isExistUserInfo, (newVal) => {
+  console.log('watch=====')
+  if (newVal) {
+    // 用户已登录
+    getCartList()
+  }
+})
 // const userStore = useUserInfoStore()
 const removeCart = (id: string) => {
   uni.showModal({
@@ -33,7 +44,6 @@ const removeCart = (id: string) => {
   })
 }
 const onChangeNumber = async (ev: any) => {
-  console.log(ev, 'ev***')
   // ev.index 表示skuId
   // await updateCartNumberApi(ev.index, {
   //   count: ev.value,
@@ -66,12 +76,27 @@ const onChangeAllSelect = async () => {
 // const selectCartPrice = computed(() =>
 //   selectCartLsit.value.reduce((sum, item) => sum + item.nowPrice * item.count, 0),
 // )
+
 const toPayment = () => {
   if (!selectCartNumber.value) {
     uni.showToast({
       title: '请先选择商品~~',
       icon: 'none',
     })
+    return
+  }
+
+  if (!useUserInfoStore().isExistUserInfo) {
+    uni.showToast({
+      title: '用户未登录,请先登录',
+      icon: 'none',
+    })
+    // 用户未登录，跳转到登录页
+    setTimeout(() => {
+      uni.navigateTo({
+        url: '/pages/login/login',
+      })
+    }, 500)
     return
   }
   uni.navigateTo({
@@ -84,153 +109,137 @@ onShow(() => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="page">
+  <scroll-view scroll-y class="scroll-view">
     <uni-load-more status="loading" v-if="loading"></uni-load-more>
-    <view v-else>
-      <scroll-view scroll-y class="scroll-view">
-        <!-- 购物车列表 -->
-        <view class="cart-list" v-if="cartList.length">
-          <!-- 优惠提示 -->
-          <view class="tips">
-            <text class="label">满减</text>
-            <text class="desc">满1件, 即可享受9折优惠</text>
-          </view>
-          <!-- #ifdef MP-WEIXIN -->
-          <!-- 滑动操作分区 -->
-          <uni-swipe-action>
-            <!-- 滑动操作项 -->
-            <uni-swipe-action-item
-              swipe-action-item
-              v-for="item in cartList"
-              :key="item.skuId"
-              class="cart-swipe"
+    <!-- 购物车列表 -->
+    <view class="cart-list" v-else-if="cartList.length">
+      <!-- 优惠提示 -->
+      <view class="tips">
+        <text class="label">满减</text>
+        <text class="desc">满1件, 即可享受9折优惠</text>
+      </view>
+      <!-- #ifdef MP-WEIXIN -->
+      <!-- 滑动操作分区 -->
+      <uni-swipe-action>
+        <!-- 滑动操作项 -->
+        <uni-swipe-action-item
+          swipe-action-item
+          v-for="item in cartList"
+          :key="item.skuId"
+          class="cart-swipe"
+        >
+          <!-- 商品信息 -->
+          <view class="goods">
+            <!-- 选中状态 -->
+            <text
+              class="checkbox"
+              :class="{ checked: item.selected }"
+              @tap="onChangeSelect(item)"
+            ></text>
+            <navigator
+              :url="`/pages/goods/goods?id=${item.id}`"
+              hover-class="none"
+              class="navigator"
             >
-              <!-- 商品信息 -->
-              <view class="goods">
-                <!-- 选中状态 -->
-                <text
-                  class="checkbox"
-                  :class="{ checked: item.selected }"
-                  @tap="onChangeSelect(item)"
-                ></text>
-                <navigator
-                  :url="`/pages/goods/goods?id=${item.id}`"
-                  hover-class="none"
-                  class="navigator"
-                >
-                  <image mode="aspectFill" class="picture" :src="item.picture"></image>
-                  <view class="meta">
-                    <view class="name ellipsis">{{ item.name }}</view>
-                    <view class="attrsText ellipsis">{{ item.attrsText }}</view>
-                    <view class="price">{{ item.nowPrice }}</view>
-                  </view>
-                </navigator>
-                <!-- 商品数量 -->
-                <view class="count">
-                  <!-- <text class="text">-</text>
+              <image mode="aspectFill" class="picture" :src="item.picture"></image>
+              <view class="meta">
+                <view class="name ellipsis">{{ item.name }}</view>
+                <view class="attrsText ellipsis">{{ item.attrsText }}</view>
+                <view class="price">{{ item.nowPrice }}</view>
+              </view>
+            </navigator>
+            <!-- 商品数量 -->
+            <view class="count">
+              <!-- <text class="text">-</text>
                 <input class="input" type="number" :value="item.count.toString()" />
                 <text class="text">+</text> -->
-                  <vk-data-input-number-box
-                    v-model="item.count"
-                    :min="1"
-                    :max="item.stock"
-                    :index="item.skuId"
-                    @change="onChangeNumber"
-                  ></vk-data-input-number-box>
-                </view>
-              </view>
-              <!-- 右侧删除按钮 -->
-              <template #right>
-                <view class="cart-swipe-right">
-                  <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
-                </view>
-              </template>
-            </uni-swipe-action-item>
-          </uni-swipe-action>
-          <!-- #endif -->
-
-          <!-- #ifdef H5 -->
-          <view v-for="item in cartList" :key="item.skuId" class="cart-swipe">
-            <!-- 商品信息 -->
-            <view class="goods">
-              <!-- 选中状态 -->
-              <text
-                class="checkbox"
-                :class="{ checked: item.selected }"
-                @tap="onChangeSelect(item)"
-              ></text>
-              <navigator
-                :url="`/pages/goods/goods?id=${item.id}`"
-                hover-class="none"
-                class="navigator"
-              >
-                <image mode="aspectFill" class="picture" :src="item.picture"></image>
-                <view class="meta">
-                  <view class="name ellipsis">{{ item.name }}</view>
-                  <view class="attrsText ellipsis">{{ item.attrsText }}</view>
-                  <view class="price">{{ item.nowPrice }}</view>
-                </view>
-              </navigator>
-              <!-- 商品数量 -->
-              <view class="count">
-                <!-- <text class="text">-</text>
-                <input class="input" type="number" :value="item.count.toString()" />
-                <text class="text">+</text> -->
-                <vk-data-input-number-box
-                  v-model="item.count"
-                  :min="1"
-                  :max="item.stock"
-                  :index="item.skuId"
-                  @change="onChangeNumber"
-                ></vk-data-input-number-box>
-              </view>
-              <!-- 右侧删除按钮 -->
-              <view class="cart-swipe-right">
-                <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
-              </view>
+              <vk-data-input-number-box
+                v-model="item.count"
+                :min="1"
+                :max="item.stock"
+                :index="item.skuId"
+                @change="onChangeNumber"
+              ></vk-data-input-number-box>
             </view>
           </view>
-          <!-- #endif -->
-        </view>
-        <!-- 购物车空状态 -->
-        <view class="cart-blank" v-else>
-          <image src="/static/images/blank_cart.png" class="image" />
-          <text class="text">购物车还是空的，快来挑选好货吧</text>
-          <navigator open-type="switchTab" url="/pages/index/index" hover-class="none">
-            <button class="button">去首页看看</button>
+          <!-- 右侧删除按钮 -->
+          <template #right>
+            <view class="cart-swipe-right">
+              <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
+            </view>
+          </template>
+        </uni-swipe-action-item>
+      </uni-swipe-action>
+      <!-- #endif -->
+
+      <!-- #ifdef H5 -->
+      <view v-for="item in cartList" :key="item.skuId" class="cart-swipe">
+        <!-- 商品信息 -->
+        <view class="goods">
+          <!-- 选中状态 -->
+          <text
+            class="checkbox"
+            :class="{ checked: item.selected }"
+            @tap="onChangeSelect(item)"
+          ></text>
+          <navigator :url="`/pages/goods/goods?id=${item.id}`" hover-class="none" class="navigator">
+            <image mode="aspectFill" class="picture" :src="item.picture"></image>
+            <view class="meta">
+              <view class="name ellipsis">{{ item.name }}</view>
+              <view class="attrsText ellipsis">{{ item.attrsText }}</view>
+              <view class="price">{{ item.nowPrice }}</view>
+            </view>
           </navigator>
-        </view>
-        <!-- 吸底工具栏 -->
-        <view class="toolbar">
-          <text class="all" :class="{ checked: isAllSelected }" @tap="onChangeAllSelect">全选</text>
-          <text class="text">合计:</text>
-          <text class="amount">{{ selectCartPrice }}</text>
-          <view class="button-grounp" @tap="toPayment">
-            <view class="button payment-button" :class="{ disabled: !selectCartNumber }">
-              去结算({{ selectCartNumber }})
-            </view>
+          <!-- 商品数量 -->
+          <view class="count">
+            <!-- <text class="text">-</text>
+                <input class="input" type="number" :value="item.count.toString()" />
+                <text class="text">+</text> -->
+            <vk-data-input-number-box
+              v-model="item.count"
+              :min="1"
+              :max="item.stock"
+              :index="item.skuId"
+              @change="onChangeNumber"
+            ></vk-data-input-number-box>
+          </view>
+          <!-- 右侧删除按钮 -->
+          <view class="cart-swipe-right">
+            <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
           </view>
         </view>
-
-        <!-- 猜你喜欢
-      <XtxGuess ref="guessRef"></XtxGuess> -->
-        <!-- 底部占位空盒子 -->
-        <view class="toolbar-height"></view>
-      </scroll-view>
+      </view>
+      <!-- #endif -->
     </view>
+    <!-- 购物车空状态 -->
+    <view class="cart-blank" v-else>
+      <image src="/static/images/blank_cart.png" class="image" />
+      <text class="text">购物车还是空的，快来挑选好货吧</text>
+      <navigator open-type="switchTab" url="/pages/index/index" hover-class="none">
+        <button class="button">去首页看看</button>
+      </navigator>
+    </view>
+    <!-- 吸底工具栏 -->
+    <view class="toolbar">
+      <text class="all" :class="{ checked: isAllSelected }" @tap="onChangeAllSelect">全选</text>
+      <text class="text">合计:</text>
+      <text class="amount">{{ selectCartPrice }}</text>
+      <view class="button-grounp" @tap="toPayment">
+        <view class="button payment-button" :class="{ disabled: !selectCartNumber }">
+          去结算({{ selectCartNumber }})
+        </view>
+      </view>
+    </view>
+
+    <!-- 猜你喜欢
+      <XtxGuess ref="guessRef"></XtxGuess> -->
+    <!-- 底部占位空盒子 -->
+    <view class="toolbar-height"></view>
   </scroll-view>
 </template>
 
 <style lang="scss">
 :host {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background-color: #f7f7f8;
-}
-// 根元素
-.page {
   height: 100vh;
   display: flex;
   flex-direction: column;

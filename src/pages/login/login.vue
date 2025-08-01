@@ -3,14 +3,13 @@ import { loginWeiXinApi, loginWeiXinSimpleApi } from '@/services/apis/login'
 import { onLoad } from '@dcloudio/uni-app'
 import { useUserInfoStore } from '@/stores/modules/user'
 import { useCart } from '@/composables'
-// #ifdef MP-WEIXIN
+
 let code = ''
 let getWeiXinCode = async () => {
   let res = await wx.login()
   // console.log(res.code, 'code')
   code = res.code
 }
-// #endif
 
 // 企业用户才可使用
 let onGetPhoneNumber: UniHelper.ButtonOnGetphonenumber = async (e) => {
@@ -42,7 +41,9 @@ let simpleLogin = async () => {
   }, 500)
 }
 onLoad(() => {
+  // #ifdef MP-WEIXIN
   getWeiXinCode()
+  // #endif
 })
 </script>
 

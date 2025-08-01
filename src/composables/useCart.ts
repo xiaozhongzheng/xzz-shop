@@ -19,6 +19,7 @@ import {
   addCartApi,
 } from '@/services/apis/cart'
 import { useUserInfoStore } from '@/stores/modules/user'
+import { storeToRefs } from 'pinia'
 
 /**
  * 购物车组合式函数
@@ -29,12 +30,13 @@ export const useCart = () => {
   const cartList = ref<CartItem[]>([])
   // 加载状态
   const loading = ref(false)
-  // 用户状态
-  const { isExistUserInfo } = useUserInfoStore()
+  // storeToRefs 使其变成响应式
+  const { isExistUserInfo } = storeToRefs(useUserInfoStore())
 
   // 获取购物车列表
   const getCartList = async () => {
-    if (isExistUserInfo) {
+    console.log(isExistUserInfo.value, 'isExistUserInfo.value')
+    if (isExistUserInfo.value) {
       try {
         loading.value = true
         const { result } = await getCartListApi()
@@ -69,25 +71,13 @@ export const useCart = () => {
         failedSkuIds.push(item.skuId)
       }
     }
-    // 只清除合并成功的商品，失败的保留在本地
-    if (failedSkuIds.length > 0) {
-      // 保留未成功合并的商品
-      const remain = localCart.filter((item) => failedSkuIds.includes(item.skuId))
-      setCartList(remain)
-      uni.showToast({
-        title: `有${failedSkuIds.length}件商品合并失败`,
-        icon: 'none',
-      })
-      return { success: false, failed: failedSkuIds }
-    } else {
-      clearCart()
-      return { success: true, failed: [] }
-    }
+    // 清空本地购物车缓存
+    clearCart()
   }
   // 添加商品到购物车
   const addToCart = async (item: CartItem) => {
     const { skuId, count } = item
-    if (isExistUserInfo) {
+    if (isExistUserInfo.value) {
       try {
         await addCartApi({ skuId, count })
         uni.showToast({ title: '添加成功', icon: 'success' })
@@ -108,7 +98,7 @@ export const useCart = () => {
 
   // 删除购物车商品
   const removeFromCart = async (ids: string[]) => {
-    if (isExistUserInfo) {
+    if (isExistUserInfo.value) {
       try {
         await removeCartApi(ids)
         uni.showToast({ title: '删除成功', icon: 'success' })
@@ -125,7 +115,7 @@ export const useCart = () => {
 
   // 更新商品数量
   const updateCartNumber = async (skuId: string, count: number) => {
-    if (isExistUserInfo) {
+    if (isExistUserInfo.value) {
       try {
         await updateCartNumberApi(skuId, { count })
         const item = cartList.value.find((item) => item.skuId === skuId)
@@ -141,7 +131,7 @@ export const useCart = () => {
 
   // 更新商品选中状态
   const updateCartSelected = async (skuId: string, selected: boolean) => {
-    if (isExistUserInfo) {
+    if (isExistUserInfo.value) {
       try {
         await updateCartNumberApi(skuId, { selected })
         const item = cartList.value.find((item) => item.skuId === skuId)
@@ -158,7 +148,7 @@ export const useCart = () => {
   // 全选/取消全选
   const updateAllSelected = async (selected: boolean) => {
     // console.log(selected, 'updateAllSelected')
-    if (isExistUserInfo) {
+    if (isExistUserInfo.value) {
       try {
         await updateCartStatusApi(selected)
         cartList.value.forEach((item) => {

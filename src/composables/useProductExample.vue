@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onLoad } from '@dcloudio/uni-app'
-import { useProduct } from '@/composables/index'
+import { useProduct } from './useProduct'
 import { getGoodsApi } from '@/services/apis/category'
-import { ref } from 'vue'
+
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 
@@ -31,7 +31,6 @@ const {
   oldPrice,
   isDiscounted,
   discountRate,
-  calFormatDiscount,
   imageCount,
   hasStock,
   priceRangeText,
@@ -41,13 +40,28 @@ const {
 const query = defineProps<{
   id: string
 }>()
-// SKU 模式枚举 1(即展示购物车、又展示立即购买)、2（展示购物车）、3（展示立即购买）
-const mode = ref(1)
+
+// 获取商品详情
+const getGoods = async () => {
+  try {
+    loading.value = true
+    const res = await getGoodsApi(query.id)
+    setGoodsInfo(res.result)
+  } catch (error) {
+    console.error('获取商品详情失败:', error)
+    uni.showToast({
+      title: '获取商品详情失败',
+      icon: 'error',
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 // 页面加载
 onLoad(async () => {
   uni.showLoading({ title: '页面加载中...', icon: 'none', mask: true })
-  await getGoodsDetail(query?.id)
+  await getGoods()
   uni.hideLoading()
 })
 
@@ -57,12 +71,9 @@ enum SkuMode {
   Cart = 2,
   Buy = 3,
 }
-const setMode = (val: SkuMode) => {
-  mode.value = val
-}
+
 // 打开 SKU 弹窗
 const openSkuPopup = (mode: SkuMode) => {
-  setMode(mode)
   showSkuPopup()
 }
 
@@ -82,7 +93,7 @@ const onBuyNow = (ev: any) => {
   <vk-data-goods-sku-popup
     v-model="isShowSku"
     :localdata="localdata"
-    :mode="mode"
+    :mode="3"
     add-cart-background-color="rgb(243, 171, 114)"
     buy-now-background-color="rgb(90, 183, 157)"
     @add-cart="onAddCart"
@@ -109,15 +120,10 @@ const onBuyNow = (ev: any) => {
       <!-- 商品简介 -->
       <view class="meta">
         <view class="price">
-          <!-- <text class="symbol">¥</text> -->
-          <view
-            >价格：
-            <text class="number">{{ priceRangeText }}</text>
-          </view>
-          <text class="old-price">原价：{{ formatPrice(+oldPrice) }}</text>
-          <text class="discount"
-            >折扣：{{ isDiscounted ? calFormatDiscount(+discountRate) : '无' }}</text
-          >
+          <text class="symbol">¥</text>
+          <text class="number">{{ priceRangeText }}</text>
+          <text v-if="isDiscounted" class="old-price">{{ formatPrice(oldPrice) }}</text>
+          <text v-if="isDiscounted" class="discount">{{ formatDiscount(discountRate) }}</text>
         </view>
         <view class="name ellipsis">{{ goodsInfo?.name }}</view>
         <view class="desc">{{ goodsInfo?.desc }}</view>
@@ -296,15 +302,12 @@ page {
     position: relative;
     border-bottom: 1rpx solid #eaeaea;
     .price {
-      // height: 130rpx;
-      padding: 25rpx 30rpx;
+      height: 130rpx;
+      padding: 25rpx 30rpx 0;
       color: #fff;
       font-size: 34rpx;
       box-sizing: border-box;
       background-color: #35c8a9;
-      .discount {
-        margin-left: 30rpx;
-      }
     }
     .number {
       font-size: 56rpx;
