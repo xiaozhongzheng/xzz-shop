@@ -17,4 +17,3 @@ export const useGuessList = () => {
 // 导出购物车相关 composables
 export { useCart } from './useCart'
 export { useProduct } from './useProduct'
-export { useCartMerge } from './useCartMerge'

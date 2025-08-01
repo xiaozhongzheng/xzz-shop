@@ -1,5 +1,16 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { CartItem } from '@/types/cart'
+import { useCartStore } from '@/stores/modules/cart'
+const cartStore = useCartStore()
+const {
+  cartList: localCartList,
+  setCartList,
+  addCartItem,
+  removeCartItem,
+  clearCart,
+  updateCartItem,
+  updateCartAllSelected,
+} = cartStore
 import {
   getCartListApi,
   removeCartApi,
@@ -19,124 +30,146 @@ export const useCart = () => {
   // 加载状态
   const loading = ref(false)
   // 用户状态
-  const userStore = useUserInfoStore()
+  const { isExistUserInfo } = useUserInfoStore()
 
   // 获取购物车列表
   const getCartList = async () => {
-    if (!userStore.userInfo) return
-
-    try {
-      loading.value = true
-      const { result } = await getCartListApi()
-      cartList.value = result
-    } catch (error) {
-      console.error('获取购物车列表失败:', error)
-      uni.showToast({
-        title: '获取购物车失败',
-        icon: 'error',
-      })
-    } finally {
-      loading.value = false
+    if (isExistUserInfo) {
+      try {
+        loading.value = true
+        const { result } = await getCartListApi()
+        cartList.value = result
+      } catch (error) {
+        uni.showToast({ title: '获取购物车失败', icon: 'error' })
+      } finally {
+        loading.value = false
+      }
+    } else {
+      cartList.value = localCartList
     }
   }
 
-  // 添加商品到购物车
-  const addToCart = async (skuId: string, count: number = 1) => {
-    if (!userStore.userInfo) {
+  /**
+   * 合并本地购物车到服务端
+   * 1. 先判断本地购物车是否有商品，无则直接返回
+   * 2. 合并时，逐条添加到服务端，若服务端已有该商品则累加数量
+   * 3. 合并过程中如有失败，记录失败项，合并后提示用户
+   * 4. 合并成功后清空本地购物车
+   * 5. 返回合并结果（成功/失败的skuId列表）
+   */
+  async function mergeLocalCartToServer() {
+    const localCart = localCartList
+    if (!localCart || localCart.length === 0) return { success: true, failed: [] }
+
+    const failedSkuIds: string[] = []
+    for (const item of localCart) {
+      try {
+        await addCartApi({ skuId: item.skuId, count: item.count })
+      } catch (e) {
+        failedSkuIds.push(item.skuId)
+      }
+    }
+    // 只清除合并成功的商品，失败的保留在本地
+    if (failedSkuIds.length > 0) {
+      // 保留未成功合并的商品
+      const remain = localCart.filter((item) => failedSkuIds.includes(item.skuId))
+      setCartList(remain)
       uni.showToast({
-        title: '请先登录',
+        title: `有${failedSkuIds.length}件商品合并失败`,
         icon: 'none',
       })
-      return false
+      return { success: false, failed: failedSkuIds }
+    } else {
+      clearCart()
+      return { success: true, failed: [] }
     }
-
-    try {
-      await addCartApi({ skuId, count })
-      uni.showToast({
-        title: '添加成功',
-        icon: 'success',
-      })
-      // 刷新购物车列表
-      await getCartList()
+  }
+  // 添加商品到购物车
+  const addToCart = async (item: CartItem) => {
+    const { skuId, count } = item
+    if (isExistUserInfo) {
+      try {
+        await addCartApi({ skuId, count })
+        uni.showToast({ title: '添加成功', icon: 'success' })
+        await getCartList()
+        return true
+      } catch (error) {
+        uni.showToast({ title: '添加失败', icon: 'error' })
+        return false
+      }
+    } else {
+      // 本地模式
+      addCartItem(item)
+      cartList.value = localCartList
+      uni.showToast({ title: '添加成功', icon: 'success' })
       return true
-    } catch (error) {
-      console.error('添加购物车失败:', error)
-      uni.showToast({
-        title: '添加失败',
-        icon: 'error',
-      })
-      return false
     }
   }
 
   // 删除购物车商品
   const removeFromCart = async (ids: string[]) => {
-    try {
-      await removeCartApi(ids)
-      uni.showToast({
-        title: '删除成功',
-        icon: 'success',
-      })
-      await getCartList()
-    } catch (error) {
-      console.error('删除购物车商品失败:', error)
-      uni.showToast({
-        title: '删除失败',
-        icon: 'error',
-      })
+    if (isExistUserInfo) {
+      try {
+        await removeCartApi(ids)
+        uni.showToast({ title: '删除成功', icon: 'success' })
+        await getCartList()
+      } catch (error) {
+        uni.showToast({ title: '删除失败', icon: 'error' })
+      }
+    } else {
+      removeCartItem(ids?.[0])
+      cartList.value = localCartList
+      uni.showToast({ title: '删除成功', icon: 'success' })
     }
   }
 
   // 更新商品数量
   const updateCartNumber = async (skuId: string, count: number) => {
-    try {
-      await updateCartNumberApi(skuId, { count })
-      // 更新本地数据
-      const item = cartList.value.find((item) => item.skuId === skuId)
-      if (item) {
-        item.count = count
+    if (isExistUserInfo) {
+      try {
+        await updateCartNumberApi(skuId, { count })
+        const item = cartList.value.find((item) => item.skuId === skuId)
+        if (item) item.count = count
+      } catch (error) {
+        uni.showToast({ title: '更新数量失败', icon: 'error' })
       }
-    } catch (error) {
-      console.error('更新商品数量失败:', error)
-      uni.showToast({
-        title: '更新数量失败',
-        icon: 'error',
-      })
+    } else {
+      updateCartItem(skuId, { count })
+      cartList.value = localCartList
     }
   }
 
   // 更新商品选中状态
   const updateCartSelected = async (skuId: string, selected: boolean) => {
-    try {
-      await updateCartNumberApi(skuId, { selected })
-      // 更新本地数据
-      const item = cartList.value.find((item) => item.skuId === skuId)
-      if (item) {
-        item.selected = selected
+    if (isExistUserInfo) {
+      try {
+        await updateCartNumberApi(skuId, { selected })
+        const item = cartList.value.find((item) => item.skuId === skuId)
+        if (item) item.selected = selected
+      } catch (error) {
+        uni.showToast({ title: '更新状态失败', icon: 'error' })
       }
-    } catch (error) {
-      console.error('更新选中状态失败:', error)
-      uni.showToast({
-        title: '更新状态失败',
-        icon: 'error',
-      })
+    } else {
+      updateCartItem(skuId, { selected })
+      cartList.value = localCartList
     }
   }
 
   // 全选/取消全选
   const updateAllSelected = async (selected: boolean) => {
-    try {
-      await updateCartStatusApi(selected)
-      // 更新本地数据
-      cartList.value.forEach((item) => {
-        item.selected = selected
-      })
-    } catch (error) {
-      console.error('更新全选状态失败:', error)
-      uni.showToast({
-        title: '更新状态失败',
-        icon: 'error',
-      })
+    // console.log(selected, 'updateAllSelected')
+    if (isExistUserInfo) {
+      try {
+        await updateCartStatusApi(selected)
+        cartList.value.forEach((item) => {
+          item.selected = selected
+        })
+      } catch (error) {
+        uni.showToast({ title: '更新状态失败', icon: 'error' })
+      }
+    } else {
+      updateCartAllSelected(selected)
+      cartList.value = localCartList
     }
   }
 
@@ -178,7 +211,6 @@ export const useCart = () => {
   // 清空购物车
   const clearCart = async () => {
     if (cartList.value.length === 0) return
-
     const ids = cartList.value.map((item) => item.skuId)
     await removeFromCart(ids)
   }
@@ -186,7 +218,6 @@ export const useCart = () => {
   // 清空无效商品
   const clearIneffectiveItems = async () => {
     if (ineffectiveItems.value.length === 0) return
-
     const ids = ineffectiveItems.value.map((item) => item.skuId)
     await removeFromCart(ids)
   }
@@ -205,6 +236,7 @@ export const useCart = () => {
     updateAllSelected,
     clearCart,
     clearIneffectiveItems,
+    mergeLocalCartToServer,
 
     // 计算属性
     isAllSelected,

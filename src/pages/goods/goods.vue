@@ -15,6 +15,7 @@ import type {
 import { addCartApi } from '@/services/apis/cart'
 import { useAdressStore } from '@/stores/modules/address'
 import type { AddressItem } from '@/types/address'
+import { useCart } from '@/composables'
 const query = defineProps<{
   id: string
 }>()
@@ -105,10 +106,22 @@ let selectArrText = computed(() => {
   return skuPopupRef.value?.selectArr.join('').trim() || '请选择商品规格'
 })
 let onAddCart = async (ev: SkuPopupEvent) => {
-  // console.log(ev)
-  await addCartApi({
-    skuId: ev._id,
-    count: ev.buy_num,
+  console.log(ev, 'ev========')
+  const { buy_num, goods_name, price, sku_name_arr, stock, _id, image } = ev
+  // await addCartApi({
+  //   skuId: ev._id,
+  //   count: ev.buy_num,
+  // })
+  useCart().addToCart({
+    id: _id,
+    skuId: _id,
+    name: goods_name,
+    picture: image,
+    count: buy_num,
+    price,
+    nowPrice: price,
+    stock,
+    attrsText: sku_name_arr.join(''),
   })
   uni.showToast({
     title: '添加成功',

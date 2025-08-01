@@ -9,59 +9,63 @@ import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import { useUserInfoStore } from '@/stores/modules/user'
-//
-const cartList = ref<CartItem[]>([])
-const getCartList = async () => {
-  const { result } = await getCartListApi()
-  cartList.value = result
-  console.log(result, 'result')
-}
+import { useCart } from '@/composables'
+const {
+  cartList,
+  loading,
+  getCartList,
+  removeFromCart,
+  updateCartNumber,
+  updateCartSelected,
+  isAllSelected,
+  updateAllSelected,
+  selectedCount: selectCartNumber,
+  selectedTotalPrice: selectCartPrice,
+} = useCart()
+
 const userStore = useUserInfoStore()
 const removeCart = (id: string) => {
   uni.showModal({
     content: '是否删除',
-    success: async (res) => {
-      // console.log(res.confirm)
-      if (res.confirm) {
-        await removeCartApi([id])
-        uni.showToast({
-          title: '删除成功',
-        })
-        getCartList()
-      }
+    success: () => {
+      removeFromCart([id])
     },
   })
 }
 const onChangeNumber = async (ev: any) => {
-  console.log(ev)
-  await updateCartNumberApi(ev.index, {
-    count: ev.value,
-  })
+  console.log(ev, 'ev***')
+  // ev.index 表示skuId
+  // await updateCartNumberApi(ev.index, {
+  //   count: ev.value,
+  // })
+  updateCartNumber(ev.index, ev.value)
 }
 const onChangeSelect = async (item: CartItem) => {
-  item.selected = !item.selected
-  await updateCartNumberApi(item.skuId, {
-    selected: item.selected,
-  })
+  // item.selected = !item.selected
+  // await updateCartNumberApi(item.skuId, {
+  //   selected: item.selected,
+  // })
+  updateCartSelected(item.skuId, !item.selected)
 }
-let isAllSelected = computed(() => {
-  return cartList.value.every((v) => v.selected)
-})
+// let isAllSelected = computed(() => {
+//   return cartList.value.every((v) => v.selected)
+// })
 const onChangeAllSelect = async () => {
   // 全选状态取反
-  const select = !isAllSelected.value
-  cartList.value.forEach((v) => (v.selected = select))
-  await updateCartStatusApi(select)
+  // const select = !isAllSelected.value
+  // cartList.value.forEach((v) => (v.selected = select))
+  // await updateCartStatusApi(select)
+  updateAllSelected(!isAllSelected.value)
 }
-const selectCartLsit = computed(() => cartList.value.filter((v) => v.selected))
-const selectCartNumber = computed(() =>
-  selectCartLsit.value.reduce((sum, item) => {
-    return sum + item.count
-  }, 0),
-)
-const selectCartPrice = computed(() =>
-  selectCartLsit.value.reduce((sum, item) => sum + item.nowPrice * item.count, 0),
-)
+// const selectCartLsit = computed(() => cartList.value.filter((v) => v.selected))
+// const selectCartNumber = computed(() =>
+//   selectCartLsit.value.reduce((sum, item) => {
+//     return sum + item.count
+//   }, 0),
+// )
+// const selectCartPrice = computed(() =>
+//   selectCartLsit.value.reduce((sum, item) => sum + item.nowPrice * item.count, 0),
+// )
 const toPayment = () => {
   if (!selectCartNumber.value) {
     uni.showToast({
@@ -75,14 +79,14 @@ const toPayment = () => {
   })
 }
 onShow(() => {
-  userStore.userInfo && getCartList()
+  getCartList()
 })
 </script>
 
 <template>
-  <scroll-view scroll-y class="scroll-view">
-    <!-- 已登录: 显示购物车 -->
-    <template v-if="userStore.userInfo">
+  <uni-load-more status="loading" v-if="loading"></uni-load-more>
+  <view v-else>
+    <scroll-view scroll-y class="scroll-view">
       <!-- 购物车列表 -->
       <view class="cart-list" v-if="cartList.length">
         <!-- 优惠提示 -->
@@ -90,6 +94,7 @@ onShow(() => {
           <text class="label">满减</text>
           <text class="desc">满1件, 即可享受9折优惠</text>
         </view>
+        <!-- #ifdef MP-WEIXIN -->
         <!-- 滑动操作分区 -->
         <uni-swipe-action>
           <!-- 滑动操作项 -->
@@ -136,6 +141,8 @@ onShow(() => {
             </template>
           </uni-swipe-action-item>
         </uni-swipe-action>
+        <!-- #endif -->
+
         <!-- #ifdef H5 -->
         <view v-for="item in cartList" :key="item.skuId" class="cart-swipe">
           <!-- 商品信息 -->
@@ -171,13 +178,11 @@ onShow(() => {
                 @change="onChangeNumber"
               ></vk-data-input-number-box>
             </view>
-          </view>
-          <!-- 右侧删除按钮 -->
-          <template #right>
+            <!-- 右侧删除按钮 -->
             <view class="cart-swipe-right">
               <button class="button delete-button" @click="removeCart(item.skuId)">删除</button>
             </view>
-          </template>
+          </view>
         </view>
         <!-- #endif -->
       </view>
@@ -200,19 +205,13 @@ onShow(() => {
           </view>
         </view>
       </view>
-    </template>
-    <!-- 未登录: 提示登录 -->
-    <view class="login-blank" v-else>
-      <text class="text">登录后可查看购物车中的商品</text>
-      <navigator url="/pages/login/login" hover-class="none">
-        <button class="button">去登录</button>
-      </navigator>
-    </view>
-    <!-- 猜你喜欢 -->
-    <XtxGuess ref="guessRef"></XtxGuess>
-    <!-- 底部占位空盒子 -->
-    <view class="toolbar-height"></view>
-  </scroll-view>
+
+      <!-- 猜你喜欢
+      <XtxGuess ref="guessRef"></XtxGuess> -->
+      <!-- 底部占位空盒子 -->
+      <view class="toolbar-height"></view>
+    </scroll-view>
+  </view>
 </template>
 
 <style lang="scss">
@@ -260,6 +259,7 @@ onShow(() => {
     border-radius: 10rpx;
     background-color: #fff;
     position: relative;
+    background-color: #f7f7f8;
 
     .navigator {
       display: flex;
@@ -304,6 +304,7 @@ onShow(() => {
 
     .name {
       height: 72rpx;
+      max-width: 300rpx;
       font-size: 26rpx;
       color: #444;
     }
@@ -315,7 +316,6 @@ onShow(() => {
       align-self: flex-start;
       border-radius: 4rpx;
       color: #888;
-      background-color: #f7f7f8;
     }
 
     .price {
@@ -368,7 +368,10 @@ onShow(() => {
 
   .cart-swipe-right {
     display: flex;
-    height: 100%;
+    height: 60rpx;
+    border-radius: 30rpx;
+    position: absolute;
+    right: 20rpx;
 
     .button {
       display: flex;

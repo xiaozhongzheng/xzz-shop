@@ -1,7 +1,7 @@
 /** 购物车类型 */
 export type CartItem = {
   /** 商品 ID */
-  id: string
+  id?: string
   /** SKU ID */
   skuId: string
   /** 商品名称 */
@@ -17,9 +17,9 @@ export type CartItem = {
   /** 库存 */
   stock: number
   /** 是否选中 */
-  selected: boolean
+  selected?: boolean
   /** 属性文字 */
   attrsText: string
   /** 是否为有效商品 */
-  isEffective: boolean
+  isEffective?: boolean
 }

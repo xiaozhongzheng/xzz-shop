@@ -2,6 +2,7 @@
 import { loginWeiXinApi, loginWeiXinSimpleApi } from '@/services/apis/login'
 import { onLoad } from '@dcloudio/uni-app'
 import { useUserInfoStore } from '@/stores/modules/user'
+import { useCart } from '@/composables'
 // #ifdef MP-WEIXIN
 let code = ''
 let getWeiXinCode = async () => {
@@ -27,7 +28,8 @@ let simpleLogin = async () => {
   let phoneNumber = '19142094213'
   let res = await loginWeiXinSimpleApi(phoneNumber)
   userInfoStore.setUserInfo(res.result)
-
+  // 将本地缓存购物车的商品合并到数据库中
+  useCart().mergeLocalCartToServer()
   uni.showToast({
     icon: 'none',
     title: '登录成功',
@@ -47,9 +49,7 @@ onLoad(() => {
 <template>
   <view class="viewport">
     <view class="logo">
-      <image
-        src="https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/logo_icon.png"
-      ></image>
+      <image src="@/static/images/logo.jpg"></image>
     </view>
     <view class="login">
       <!-- #ifdef H5 -->
@@ -79,7 +79,7 @@ onLoad(() => {
           </button>
         </view>
       </view>
-      <view class="tips">登录/注册即视为你同意《服务条款》和《小兔鲜儿隐私协议》</view>
+      <view class="tips">登录/注册即视为你同意《服务条款》和《潮童购隐私协议》</view>
     </view>
   </view>
 </template>
@@ -97,12 +97,11 @@ page {
 }
 
 .logo {
-  flex: 1;
   text-align: center;
   image {
-    width: 220rpx;
+    width: 440rpx;
     height: 220rpx;
-    margin-top: 15vh;
+    margin-top: 30rpx;
   }
 }
 

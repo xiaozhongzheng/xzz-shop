@@ -35,11 +35,14 @@ import { ref } from 'vue'
 export const useUserInfoStore = defineStore('userInfo', {
   state: () => {
     return {
-      userInfo: {} as LoginResult,
+      userInfo: {},
     }
   },
   getters: {
-    getUserInfo: (state): LoginResult => state.userInfo,
+    getUserInfo: (state): LoginResult => state.userInfo as LoginResult,
+    isExistUserInfo(state): boolean {
+      return Object.keys(state.userInfo).length > 0
+    },
   },
   actions: {
     setUserInfo(val: LoginResult): void {

@@ -159,7 +159,7 @@
 /*
 此文件为开发者工具生成，生成时间: 2025/2/28下午9:27:44
 
-在 E:\my-project\小兔仙儿\xzz-shop\dist\dev\mp-weixin\pagesOrders\list\list.wxss 中引入样式
+在 E:\my-project\潮童购\xzz-shop\dist\dev\mp-weixin\pagesOrders\list\list.wxss 中引入样式
 ```
 @import "./list.skeleton.wxss";
 ```

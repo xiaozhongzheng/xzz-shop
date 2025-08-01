@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { CartItem } from '@/types/cart'
 
-export const useCartStore = defineStore('cart', {
+export const useCartStore = defineStore('cartList', {
   state: () => ({
     cartList: [] as CartItem[],
   }),
@@ -27,6 +27,11 @@ export const useCartStore = defineStore('cart', {
     updateCartItem(skuId: string, data: Partial<CartItem>) {
       const item = this.cartList.find((i) => i.skuId === skuId)
       if (item) Object.assign(item, data)
+    },
+    updateCartAllSelected(selected: boolean) {
+      this.cartList.forEach((item) => {
+        item.selected = selected
+      })
     },
   },
   persist: {
