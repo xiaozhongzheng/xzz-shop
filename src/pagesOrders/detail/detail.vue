@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useGuessList } from '@/composables'
+// import { useGuessList } from '@/composables'
 import {
   deleteOrdersApi,
   getLogisticsApi,
@@ -18,7 +18,7 @@ import DetailSkeleton from './components/DetailSkeleton.vue'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 // 猜你喜欢
-const { guessRef, onScrolltolower } = useGuessList()
+// const { guessRef, onScrolltolower } = useGuessList()
 // 弹出层组件
 const popup = ref<UniHelper.UniPopupInstance>()
 // 取消原因列表
@@ -247,7 +247,7 @@ onLoad(() => {
       </view>
 
       <!-- 猜你喜欢 -->
-      <XtxGuess ref="guessRef" />
+      <XtxGuess1 ref="guessRef" />
 
       <!-- 底部操作栏 -->
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
