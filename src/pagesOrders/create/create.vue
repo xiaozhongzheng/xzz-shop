@@ -4,6 +4,8 @@ import type { OrderPreResult } from '@/types/orders'
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import { useAdressStore } from '@/stores/modules/address'
+import { useCart } from '@/composables'
+const { clearCartList } = useCart()
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 // 订单备注
@@ -72,6 +74,7 @@ const onSubmitOrders = async () => {
   console.log(res, 'res---')
   // 获取订单id
   const orderId = res.result.id
+  await clearCartList() // 新增：下单成功后清空购物车
   uni.showToast({
     title: '提交成功',
     icon: 'none',
@@ -115,7 +118,6 @@ onShow(async () => {
         <view class="address"> 请选择收货地址 </view>
         <text class="icon icon-right"></text>
       </navigator>
-
       <!-- 商品信息 -->
       <view class="goods">
         <navigator
@@ -187,11 +189,13 @@ onShow(async () => {
 page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100vh;
   overflow: hidden;
   background-color: #f4f4f4;
 }
-
+.viewport {
+  padding-bottom: 48rpx;
+}
 .symbol::before {
   content: '¥';
   font-size: 80%;
@@ -344,7 +348,7 @@ page {
   padding: 0 20rpx;
   border-radius: 10rpx;
   background-color: #fff;
-
+  margin-bottom: 40rpx;
   .item {
     display: flex;
     align-items: center;

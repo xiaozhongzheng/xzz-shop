@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
-import { useGuessList } from '@/composables'
+// import { useGuessList } from '@/composables'
 import { onLoad } from '@dcloudio/uni-app'
 // 订单选项
 const orderTypes = [

@@ -110,8 +110,12 @@ export const useCartStore = defineStore(
   {
     persist: {
       storage: {
-        getItem: (key: string) => localStorage.getItem(key),
-        setItem: (key: string, value: string) => localStorage.setItem(key, value),
+        getItem(key) {
+          return uni.getStorageSync(key)
+        },
+        setItem(key, value) {
+          uni.setStorageSync(key, value)
+        },
       },
     },
   },

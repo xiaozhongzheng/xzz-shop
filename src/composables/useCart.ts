@@ -1,16 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import type { CartItem } from '@/types/cart'
 import { useCartStore } from '@/stores/modules/cart'
-const cartStore = useCartStore()
-const {
-  cartList: localCartList,
-  setCartList,
-  addCartItem,
-  removeCartItem,
-  clearCart,
-  updateCartItem,
-  updateCartAllSelected,
-} = cartStore
+
 import {
   getCartListApi,
   removeCartApi,
@@ -21,6 +12,16 @@ import {
 import { useUserInfoStore } from '@/stores/modules/user'
 import { storeToRefs } from 'pinia'
 
+const cartStore = useCartStore()
+const {
+  setCartList,
+  addCartItem,
+  removeCartItem,
+  clearCart,
+  updateCartItem,
+  updateCartAllSelected,
+} = cartStore
+const { cartList: localCartList } = storeToRefs(cartStore)
 /**
  * 购物车组合式函数
  * 封装购物车相关的状态管理和操作逻辑
@@ -47,30 +48,23 @@ export const useCart = () => {
         loading.value = false
       }
     } else {
-      cartList.value = localCartList
+      cartList.value = localCartList.value
     }
   }
 
-  /**
-   * 合并本地购物车到服务端
-   * 1. 先判断本地购物车是否有商品，无则直接返回
-   * 2. 合并时，逐条添加到服务端，若服务端已有该商品则累加数量
-   * 3. 合并过程中如有失败，记录失败项，合并后提示用户
-   * 4. 合并成功后清空本地购物车
-   * 5. 返回合并结果（成功/失败的skuId列表）
-   */
   async function mergeLocalCartToServer() {
-    const localCart = localCartList
+    const localCart = localCartList.value
     if (!localCart || localCart.length === 0) return { success: true, failed: [] }
-
-    const failedSkuIds: string[] = []
-    for (const item of localCart) {
-      try {
-        await addCartApi({ skuId: item.skuId, count: item.count })
-      } catch (e) {
-        failedSkuIds.push(item.skuId)
-      }
-    }
+    const asyncList = localCart.map((item) => addCartApi({ skuId: item.skuId, count: item.count }))
+    // 如果库存超出，则将购物车中的该商品数量修改为剩余最大库存数
+    const results = await Promise.allSettled(asyncList)
+    console.log(results, 'results')
+    // 获取合并失败的请求
+    const msgList = results
+      .filter((item) => item.status === 'rejected')
+      .map((item) => item?.reason?.error)
+    // 将错误提示给用户
+    uni.showToast({ title: msgList.join(''), icon: 'fail' })
     // 清空本地购物车缓存
     clearCart()
   }
@@ -90,7 +84,7 @@ export const useCart = () => {
     } else {
       // 本地模式
       addCartItem(item)
-      cartList.value = localCartList
+      cartList.value = localCartList.value
       uni.showToast({ title: '添加成功', icon: 'success' })
       return true
     }
@@ -108,7 +102,7 @@ export const useCart = () => {
       }
     } else {
       removeCartItem(ids?.[0])
-      cartList.value = localCartList
+      cartList.value = localCartList.value
       uni.showToast({ title: '删除成功', icon: 'success' })
     }
   }
@@ -125,7 +119,7 @@ export const useCart = () => {
       }
     } else {
       updateCartItem(skuId, { count })
-      cartList.value = localCartList
+      cartList.value = localCartList.value
     }
   }
 
@@ -141,7 +135,7 @@ export const useCart = () => {
       }
     } else {
       updateCartItem(skuId, { selected })
-      cartList.value = localCartList
+      cartList.value = localCartList.value
     }
   }
 
@@ -159,7 +153,7 @@ export const useCart = () => {
       }
     } else {
       updateCartAllSelected(selected)
-      cartList.value = localCartList
+      cartList.value = localCartList.value
     }
   }
 
@@ -204,6 +198,7 @@ export const useCart = () => {
 
   // 清空购物车
   const clearCartList = async () => {
+    console.log(cartList.value, 'cartList.value')
     if (cartList.value.length === 0) return
     const ids = cartList.value.map((item) => item.skuId)
     await removeFromCart(ids)

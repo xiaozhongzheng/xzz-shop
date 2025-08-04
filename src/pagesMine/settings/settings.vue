@@ -16,6 +16,11 @@ let logout = () => {
     },
   })
 }
+const login = () => {
+  uni.navigateTo({
+    url: '/pages/login/login',
+  })
+}
 </script>
 
 <template>
@@ -38,7 +43,8 @@ let logout = () => {
     </view>
     <!-- 操作按钮 -->
     <view class="action">
-      <view class="button" @click="logout" v-if="userStore.userInfo">退出登录</view>
+      <view class="button" @click="logout" v-if="userStore.isExistUserInfo">退出登录</view>
+      <view class="button" @click="login" v-if="!userStore.isExistUserInfo">点击登录</view>
     </view>
   </view>
 </template>
