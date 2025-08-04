@@ -247,7 +247,7 @@ onLoad(() => {
       </view>
 
       <!-- 猜你喜欢 -->
-      <XtxGuess ref="guessRef" />
+      <XtxGuess1 ref="guessRef" />
 
       <!-- 底部操作栏 -->
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>

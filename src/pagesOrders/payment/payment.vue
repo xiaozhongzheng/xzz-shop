@@ -36,7 +36,7 @@ const query = defineProps<{
     </view>
 
     <!-- 猜你喜欢 -->
-    <XtxGuess ref="guessRef" />
+    <XtxGuess1 ref="guessRef" />
   </scroll-view>
 </template>
 

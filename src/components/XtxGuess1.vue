@@ -24,7 +24,7 @@ let getGuessList = async () => {
   handleScroll()
 }
 onMounted(() => {
-  console.log(scrollRef.value.$el.height, '===')
+  // console.log(scrollRef.value.$el.height, '===')
   getGuessList()
 })
 onShow(() => {
@@ -42,6 +42,7 @@ const showSize = Math.floor(visibleSize / itemHeight) // 可视区域展示item�
 
 const handleScroll = () => {
   // console.log(scrollRef.value.$el.scrollTop)
+
   const scrollDom = scrollRef.value.$el
   scrollTop.value = scrollDom.scrollTop * 2 // 获取滚动条滚动的距离
   console.log(scrollTop.value, 'scrollTop')
@@ -88,12 +89,14 @@ const visibleData = computed(() => {
 
 <template>
   <!-- 猜你喜欢 -->
+
   <view class="caption">
     <text class="text">猜你喜欢</text>
   </view>
   <view
     class="scrollBox"
     @scroll="debounceScroll"
+    id="scrollDom"
     ref="scrollRef"
     :style="{ height: visibleSize + 'rpx' }"
   >
