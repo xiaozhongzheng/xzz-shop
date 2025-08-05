@@ -35,7 +35,7 @@ import { ref } from 'vue'
 export const useUserInfoStore = defineStore('userInfo', {
   state: () => {
     return {
-      userInfo: {},
+      userInfo: {} as LoginResult,
     }
   },
   getters: {

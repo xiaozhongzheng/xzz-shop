@@ -12,9 +12,9 @@ import { useUserInfoStore } from '@/stores/modules/user'
 // import { useUserInfoStore } from '@/stores/modules/user'
 import { useCart } from '@/composables'
 import { storeToRefs } from 'pinia'
-import { watch } from 'vue'
+import { toRefs, watch } from 'vue'
+const cartObj = useCart()
 const {
-  cartList,
   loading,
   getCartList,
   removeFromCart,
@@ -24,14 +24,17 @@ const {
   updateAllSelected,
   selectedCount: selectCartNumber,
   selectedTotalPrice: selectCartPrice,
-} = useCart()
+  mergeLocalCartToServer,
+} = cartObj
+const { cartList } = toRefs(cartObj)
 // 用户状态
 const { isExistUserInfo } = storeToRefs(useUserInfoStore())
 watch(isExistUserInfo, (newVal) => {
   console.log('watch=====')
   if (newVal) {
     // 用户已登录
-    getCartList()
+    // getCartList()
+    mergeLocalCartToServer()
   }
 })
 // const userStore = useUserInfoStore()

@@ -8,27 +8,6 @@ export const useCartStore = defineStore(
     // 状态
     const cartList = ref<CartItem[]>([])
 
-    // 计算属性
-    const cartCount = computed(() => {
-      return cartList.value.reduce((sum, item) => sum + item.count, 0)
-    })
-
-    const selectedItems = computed(() => {
-      return cartList.value.filter((item) => item.selected)
-    })
-
-    const selectedCount = computed(() => {
-      return selectedItems.value.reduce((sum, item) => sum + item.count, 0)
-    })
-
-    const selectedTotalPrice = computed(() => {
-      return selectedItems.value.reduce((sum, item) => sum + item.nowPrice * item.count, 0)
-    })
-
-    const isAllSelected = computed(() => {
-      return cartList.value.length > 0 && cartList.value.every((item) => item.selected)
-    })
-
     // 方法
     const setCartList = (list: CartItem[]) => {
       cartList.value = list
@@ -68,13 +47,6 @@ export const useCartStore = defineStore(
       })
     }
 
-    const toggleCartItemSelected = (skuId: string) => {
-      const item = cartList.value.find((i) => i.skuId === skuId)
-      if (item) {
-        item.selected = !item.selected
-      }
-    }
-
     const getCartItem = (skuId: string) => {
       return cartList.value.find((i) => i.skuId === skuId)
     }
@@ -87,13 +59,6 @@ export const useCartStore = defineStore(
       // 状态
       cartList,
 
-      // 计算属性
-      cartCount,
-      selectedItems,
-      selectedCount,
-      selectedTotalPrice,
-      isAllSelected,
-
       // 方法
       setCartList,
       addCartItem,
@@ -102,7 +67,6 @@ export const useCartStore = defineStore(
       clearCart,
       updateCartItem,
       updateCartAllSelected,
-      toggleCartItemSelected,
       getCartItem,
       hasCartItem,
     }

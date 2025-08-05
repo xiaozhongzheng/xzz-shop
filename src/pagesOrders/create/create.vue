@@ -2,10 +2,11 @@
 import { getPreOrdersApi, getPreOrdersNowApi, saveOrdersApi } from '@/services/apis/orders'
 import type { OrderPreResult } from '@/types/orders'
 import { onLoad, onShow } from '@dcloudio/uni-app'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAdressStore } from '@/stores/modules/address'
 import { useCart } from '@/composables'
-const { clearCartList } = useCart()
+const { clearCartList, selectedItems, selectedTotalPrice, removeFromCart } = useCart()
+
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 // 订单备注
@@ -65,16 +66,16 @@ const onSubmitOrders = async () => {
     addressId: selectAddress.value!.id,
     deliveryTimeType: activeDelivery.value.type,
     buyerMessage: buyerMessage.value,
-    goods: preOrders.value!.goods.map((v) => {
+    goods: selectedItems.value!.map((v) => {
       return { count: v.count, skuId: v.skuId }
     }),
     payChannel: 2,
     payType: 1,
   })
-  console.log(res, 'res---')
+  console.log(selectedItems.value, 'selectedItems.value---')
   // 获取订单id
   const orderId = res.result.id
-  await clearCartList() // 新增：下单成功后清空购物车
+  await removeFromCart(selectedItems.value.map((item) => item.skuId)) // 新增：下单成功后清空购物车
   uni.showToast({
     title: '提交成功',
     icon: 'none',
@@ -85,19 +86,19 @@ const onSubmitOrders = async () => {
   }, 500)
 }
 onShow(async () => {
-  uni.showLoading({ title: '页面加载中...', icon: 'none', mask: true })
-  if (skuId && count) {
-    await getPreOrdersNow()
-  } else {
-    await getPreOrders()
-  }
-  uni.hideLoading()
+  // uni.showLoading({ title: '页面加载中...', icon: 'none', mask: true })
+  // if (skuId && count) {
+  //   await getPreOrdersNow()
+  // } else {
+  //   await getPreOrders()
+  // }
+  // uni.hideLoading()
 })
 </script>
 
 <template>
   <scroll-view scroll-y class="viewport">
-    <template v-if="preOrders">
+    <template v-if="selectedItems.length">
       <!-- 收货地址 -->
       <navigator
         v-if="Object.keys(selectAddress).length"
@@ -121,7 +122,7 @@ onShow(async () => {
       <!-- 商品信息 -->
       <view class="goods">
         <navigator
-          v-for="item in preOrders?.goods"
+          v-for="item in selectedItems"
           :key="item.skuId"
           :url="`/pages/goods/goods?id=${item.id}`"
           class="item"
@@ -132,7 +133,7 @@ onShow(async () => {
             <view class="name ellipsis"> {{ item.name }} </view>
             <view class="attrs">{{ item.attrsText }}</view>
             <view class="prices">
-              <view class="pay-price symbol">{{ item.payPrice }}</view>
+              <view class="pay-price symbol">{{ item.price }}</view>
               <view class="price symbol">{{ item.price }}</view>
             </view>
             <view class="count">x{{ item.count }}</view>
@@ -163,11 +164,11 @@ onShow(async () => {
       <view class="settlement">
         <view class="item">
           <text class="text">商品总价: </text>
-          <text class="number symbol">{{ preOrders?.summary.totalPrice }}</text>
+          <text class="number symbol">{{ selectedTotalPrice }}</text>
         </view>
         <view class="item">
           <text class="text">运费: </text>
-          <text class="number symbol">{{ preOrders?.summary.postFee }}</text>
+          <text class="number symbol">{{ preOrders?.summary.postFee || 1 }}</text>
         </view>
       </view>
     </template>
@@ -177,7 +178,10 @@ onShow(async () => {
   <!-- 吸底工具栏 -->
   <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
     <view class="total-pay symbol">
-      <text class="number">{{ preOrders?.summary.totalPayPrice.toFixed(2) }}</text>
+      <text class="number">
+        <!-- {{ preOrders?.summary.totalPayPrice.toFixed(2) }} -->
+        {{ selectedTotalPrice + 1 }}
+      </text>
     </view>
     <view class="button" :class="{ disabled: !selectAddress }" @click="onSubmitOrders">
       提交订单

@@ -22,4 +22,6 @@ export type CartItem = {
   attrsText: string
   /** 是否为有效商品 */
   isEffective?: boolean
+  // 库存是否充足
+  isHasStock?: boolean
 }

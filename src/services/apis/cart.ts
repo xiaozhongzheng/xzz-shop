@@ -11,6 +11,7 @@ export const addCartApi = (data: addParams) => {
     method: 'POST',
     url: '/member/cart',
     data,
+    isThrottle: true, // 支持节流
   })
 }
 
@@ -18,6 +19,7 @@ export const getCartListApi = () => {
   return request<CartItem[]>({
     method: 'GET',
     url: '/member/cart',
+    showLoading: true,
   })
 }
 
@@ -50,5 +52,6 @@ export const updateCartStatusApi = (selected: boolean) => {
     data: {
       selected,
     },
+    isThrottle: true,
   })
 }

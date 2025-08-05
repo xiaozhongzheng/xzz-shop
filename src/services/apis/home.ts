@@ -9,6 +9,7 @@ export const getHomeBannerApi = (distributionSite = 1) => {
     data: {
       distributionSite,
     },
+    showLoading: true,
   })
 }
 
@@ -16,6 +17,7 @@ export const getHomeCategoryApi = () => {
   return request<HomeCategoryItem[]>({
     method: 'GET',
     url: '/home/category/mutli',
+    showLoading: true,
   })
 }
 
@@ -23,6 +25,7 @@ export const getHomeHotApi = () => {
   return request<HotItem[]>({
     method: 'GET',
     url: '/home/hot/mutli',
+    showLoading: true,
   })
 }
 
